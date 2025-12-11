@@ -90,6 +90,83 @@ export const ClientImport = () => {
         }
     };
 
+    const renderModalContent = () => {
+        switch (activeModal) {
+            case 'social':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tecnologia de Vídeo</label>
+                            <select
+                                value={socialForm.tech}
+                                onChange={e => setSocialForm({ ...socialForm, tech: e.target.value as any })}
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                            >
+                                <option value="nano_banana">Nano Banana (Rápido)</option>
+                                <option value="veo3">Google VEO3 (Alta Qualidade)</option>
+                                <option value="sora">OpenAI Sora (Cinematográfico)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Prompt / Roteiro do Comercial</label>
+                            <textarea
+                                value={socialForm.topic}
+                                onChange={e => setSocialForm({ ...socialForm, topic: e.target.value })}
+                                className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Descreva como deve ser o vídeo, produto em destaque, estilo visual..."
+                            />
+                        </div>
+                    </div>
+                );
+            case 'scraper':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">URL Alvo</label>
+                            <input
+                                type="url"
+                                value={scraperForm.url}
+                                onChange={e => setScraperForm({ ...scraperForm, url: e.target.value })}
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                                placeholder="https://..."
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">O que buscar?</label>
+                            <textarea
+                                value={scraperForm.description}
+                                onChange={e => setScraperForm({ ...scraperForm, description: e.target.value })}
+                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Ex: Buscar leads de empresas de construção, emails e telefones..."
+                            />
+                        </div>
+                    </div>
+                );
+            case 'email':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Assunto do E-mail</label>
+                            <input
+                                value={emailSubject}
+                                onChange={e => setEmailSubject(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                                placeholder="Oferta Especial..."
+                            />
+                        </div>
+                        <p className="text-sm text-gray-500">O corpo do email será gerado automaticamente pela IA com base no perfil do cliente.</p>
+                    </div>
+                );
+            default:
+                return (
+                    <div className="text-center py-6 text-gray-600">
+                        <p>Confirmar execução da automação <strong>{activeModal?.toUpperCase()}</strong>?</p>
+                        {activeModal === 'whatsapp' && <p className="text-sm mt-2 text-gray-400">Será enviado para {previewData.length} contatos.</p>}
+                    </div>
+                );
+        }
+    };
+
     return (
         <div className="space-y-6">
             <header>
