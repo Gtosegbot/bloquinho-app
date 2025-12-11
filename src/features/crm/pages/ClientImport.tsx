@@ -1,12 +1,11 @@
-
 import { useState } from 'react';
-import { Send, Upload } from 'lucide-react';
+import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap } from 'lucide-react';
 
 import { n8nService } from '../../../services/n8nService';
 
 export const ClientImport = () => {
     const [previewData, setPreviewData] = useState<any[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<string | null>(null);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -26,37 +25,75 @@ export const ClientImport = () => {
         reader.readAsText(file);
     };
 
-    const handleWhatsAppCampaign = async () => {
-        if (previewData.length === 0) {
-            alert('Importe uma lista de clientes primeiro!');
+    const handleCampaign = async (type: 'whatsapp' | 'email' | 'sms' | 'scraper' | 'social' | 'ads') => {
+        if (['whatsapp', 'email', 'sms'].includes(type) && previewData.length === 0) {
+            alert('Importe uma lista de clientes primeiro para esta campanha!');
             return;
         }
 
-        if (!confirm(`Deseja disparar campanha para ${previewData.length} contatos?`)) return;
+        let payload: any = { clients: previewData };
 
-        setLoading(true);
+        // Custom prompts based on type
+        if (type === 'scraper') {
+            const url = prompt("Digite a URL para raspar dados:");
+            if (!url) return;
+            payload = { url };
+        }
+        else if (type === 'email') {
+            const subject = prompt("Assunto do E-mail:");
+            if (!subject) return;
+            payload = { ...payload, subject, campaignName: 'Email Mkt Manual' };
+        }
+        else if (type === 'social') {
+            const topic = prompt("Sobre qual tema será o vídeo?");
+            if (!topic) return;
+            payload = { topic };
+        }
+
+        if (!confirm(`Confirmar disparo de ${type.toUpperCase()}?`)) return;
+
+        setLoading(type);
         try {
-            await n8nService.triggerWhatsAppCampaign({
-                campaignName: 'Promoção Importação Manual',
-                clients: previewData
-            });
-            alert('🚀 Campanha de WhatsApp iniciada com sucesso!');
+            switch (type) {
+                case 'whatsapp':
+                    await n8nService.triggerWhatsAppCampaign({ campaignName: 'Wpp Manual', clients: previewData });
+                    break;
+                case 'email':
+                    await n8nService.triggerWorkflow('EMAIL', payload);
+                    break;
+                case 'sms':
+                    await n8nService.triggerWorkflow('SMS', payload);
+                    break;
+                case 'scraper':
+                    await n8nService.triggerWorkflow('SCRAPER', payload);
+                    break;
+                case 'social':
+                    await n8nService.triggerWorkflow('SOCIAL_VIDEO', payload);
+                    break;
+                case 'ads':
+                    await n8nService.triggerWorkflow('NANO_ADS', payload);
+                    break;
+            }
+            alert(`✅ Ação ${type} iniciada com sucesso!`);
         } catch (error) {
-            alert('Erro ao iniciar campanha. Verifique o console.');
+            alert(`Erro ao iniciar ${type}. Veja o console.`);
         } finally {
-            setLoading(false);
+            setLoading(null);
         }
     };
 
     return (
         <div className="space-y-6">
-            {/* Headers ... */}
+            <header>
+                <h1 className="text-2xl font-bold text-gray-800">Marketing & Clientes</h1>
+                <p className="text-gray-500">Gestão de base de contatos e disparadores de automação.</p>
+            </header>
 
             <div className="grid md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                     <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <Upload className="w-5 h-5 text-blue-600" />
-                        Importar CSV
+                        Importar Base (CSV)
                     </h3>
                     <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors">
                         <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
@@ -70,34 +107,63 @@ export const ClientImport = () => {
 
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                     <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Send className="w-5 h-5 text-purple-600" />
-                        Campanhas
+                        <Zap className="w-5 h-5 text-purple-600" />
+                        Automações Rápidas
                     </h3>
-                    <div className="space-y-3">
-                        <button
-                            onClick={handleWhatsAppCampaign}
-                            disabled={loading}
-                            className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-200 hover:bg-purple-50 transition-all flex items-center justify-between group disabled:opacity-50"
-                        >
-                            <div>
-                                <h4 className="font-semibold text-gray-700">Disparo WhatsApp (Promoção)</h4>
-                                <p className="text-xs text-gray-500">Enviar para {previewData.length > 0 ? `${previewData.length} contatos` : 'lista importada'}</p>
-                            </div>
-                            {loading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div> : <Send className="w-4 h-4 text-gray-300 group-hover:text-purple-600" />}
-                        </button>
-                        {/* Other buttons */}
-                        <button className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-200 hover:bg-purple-50 transition-all flex items-center justify-center group">
-                            <div className="text-center text-gray-500 text-sm">
-                                + Nova Campanha
-                            </div>
-                        </button>
+                    <div className="grid grid-cols-1 gap-3 max-h-[400px] overflow-y-auto pr-2">
+                        <CampaignButton
+                            icon={<Send className="w-4 h-4" />}
+                            label="Disparo WhatsApp"
+                            desc="Enviar p/ lista importada"
+                            onClick={() => handleCampaign('whatsapp')}
+                            loading={loading === 'whatsapp'}
+                        />
+                        <CampaignButton
+                            icon={<Mail className="w-4 h-4" />}
+                            label="Campanha de Email"
+                            desc="Newsletter / Promoção"
+                            onClick={() => handleCampaign('email')}
+                            loading={loading === 'email'}
+                        />
+                        <CampaignButton
+                            icon={<MessageSquare className="w-4 h-4" />}
+                            label="Disparo SMS"
+                            desc="Avisos curtos"
+                            onClick={() => handleCampaign('sms')}
+                            loading={loading === 'sms'}
+                        />
+                        <div className="h-px bg-gray-100 my-2"></div>
+                        <CampaignButton
+                            icon={<Globe className="w-4 h-4" />}
+                            label="Web Scraper"
+                            desc="Extrair leads de URL"
+                            onClick={() => handleCampaign('scraper')}
+                            loading={loading === 'scraper'}
+                        />
+                        <CampaignButton
+                            icon={<Video className="w-4 h-4" />}
+                            label="Criar Vídeo Social"
+                            desc="Shorts/Reels Automático"
+                            onClick={() => handleCampaign('social')}
+                            loading={loading === 'social'}
+                        />
+                        <CampaignButton
+                            icon={<BarChart className="w-4 h-4" />}
+                            label="Gestão de Tráfego"
+                            desc="Relatório Nano Ads"
+                            onClick={() => handleCampaign('ads')}
+                            loading={loading === 'ads'}
+                        />
                     </div>
                 </div>
             </div>
 
             {previewData.length > 0 && (
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4">Pré-visualização da Importação</h3>
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-bold text-gray-800">Base Carregada ({previewData.length})</h3>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Pronto para envio</span>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
@@ -120,13 +186,23 @@ export const ClientImport = () => {
                             </tbody>
                         </table>
                     </div>
-                    <div className="mt-4 flex justify-end">
-                        <button className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-                            Confirmar Importação
-                        </button>
-                    </div>
                 </div>
             )}
         </div>
     );
 };
+
+// Helper Component for consistency
+const CampaignButton = ({ icon, label, desc, onClick, loading }: any) => (
+    <button
+        onClick={onClick}
+        disabled={loading}
+        className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-purple-200 hover:bg-purple-50 transition-all flex items-center justify-between group disabled:opacity-50"
+    >
+        <div>
+            <h4 className="font-semibold text-gray-700 text-sm">{label}</h4>
+            <p className="text-xs text-gray-500">{desc}</p>
+        </div>
+        {loading ? <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600"></div> : <div className="text-gray-300 group-hover:text-purple-600">{icon}</div>}
+    </button>
+);
