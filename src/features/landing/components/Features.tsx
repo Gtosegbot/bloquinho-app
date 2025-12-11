@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Zap, Palette, HandCoins, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
