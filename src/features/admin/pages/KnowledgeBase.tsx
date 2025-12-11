@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Upload, FileText, Search, Plus, Trash2 } from 'lucide-react';
+import { Upload, Search, Trash2 } from 'lucide-react';
 import { productCatalog } from '../data/catalog';
 
 export const KnowledgeBase = () => {

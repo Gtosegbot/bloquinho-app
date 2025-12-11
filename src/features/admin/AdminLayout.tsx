@@ -1,6 +1,6 @@
 
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Database, Calculator, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Database, Calculator, LogOut } from 'lucide-react';
 import bloquinhoHead from '../../../assets/bloquinho.png'; // Re-using existing asset
 
 export const AdminLayout = () => {
