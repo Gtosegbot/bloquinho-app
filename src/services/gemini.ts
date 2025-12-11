@@ -11,8 +11,8 @@ let model: any = null;
 export const initializeGemini = () => {
     if (API_KEY && !genAI) {
         genAI = new GoogleGenerativeAI(API_KEY);
-        // Using gemini-1.5-flash which is current state-of-the-art for speed/cost (comparable to "2.5" conceptual tier for this use case)
-        model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        // User explicitly confirmed "gemini-2.5-flash" is the correct model for this timeframe (Dec 2025).
+        model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
     }
 };
 
