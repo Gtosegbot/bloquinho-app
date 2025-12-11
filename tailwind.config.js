@@ -7,6 +7,8 @@ export default {
     theme: {
         extend: {
             colors: {
+                background: "hsl(var(--background))",
+                foreground: "hsl(var(--foreground))",
                 primary: {
                     DEFAULT: "#000000", // Placeholder, will update with design system
                     foreground: "#ffffff",
