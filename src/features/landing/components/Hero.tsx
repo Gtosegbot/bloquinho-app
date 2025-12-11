@@ -22,7 +22,10 @@ export const Hero = () => {
                             Cobrimos qualquer orçamento e criamos sua arte com Inteligência Artificial.
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <button className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all">
+                            <button
+                                onClick={() => window.dispatchEvent(new CustomEvent('open-chat'))}
+                                className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold text-lg shadow-xl hover:shadow-blue-500/40 hover:-translate-y-1 transition-all"
+                            >
                                 Falar com Bloquinho
                             </button>
                             <button className="px-8 py-4 bg-white text-gray-700 border-2 border-gray-100 rounded-xl font-bold text-lg hover:border-blue-100 hover:bg-blue-50 transition-all">

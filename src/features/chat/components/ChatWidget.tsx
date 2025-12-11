@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChatWindow } from './ChatWindow';
 import bloquinhoHead from '../../../assets/bloquinho.png';
 
 export const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
+
+    useEffect(() => {
+        const handleOpenChat = () => setIsOpen(true);
+        window.addEventListener('open-chat', handleOpenChat);
+        return () => window.removeEventListener('open-chat', handleOpenChat);
+    }, []);
 
     return (
         <>

@@ -17,7 +17,10 @@ export const Navbar = () => {
                         <Link to="/services" className="text-gray-600 hover:text-blue-600 transition-colors">Serviços</Link>
                         <Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors">Sobre</Link>
                         <Link to="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">Contato</Link>
-                        <button className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-500/30">
+                        <button
+                            onClick={() => window.dispatchEvent(new CustomEvent('open-chat'))}
+                            className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-500/30"
+                        >
                             Orçamento Rápido
                         </button>
                     </div>
