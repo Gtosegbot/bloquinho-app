@@ -14,15 +14,9 @@ export const Calculator = () => {
             // Simple mock logic: base price * quantity (just for demo)
             // Real logic would depend on unit types (m2, un, etc)
             // Using a rough estimate for now
+            // Simple mock logic
             const numericPrice = parseFloat(product.preco.replace('R$', '').replace(',', '.'));
-            let finalPrice = 0;
-
-            if (product.unidade === 'un') {
-                finalPrice = numericPrice * quantity;
-            } else {
-                // For m2 or others, assume quantity is size for now
-                finalPrice = numericPrice * quantity;
-            }
+            const finalPrice = numericPrice * quantity;
 
             setResult(finalPrice);
         }
@@ -49,7 +43,7 @@ export const Calculator = () => {
                         >
                             <option value="">Selecione um produto...</option>
                             {productCatalog.map(p => (
-                                <option key={p.codigo} value={p.codigo}>{p.produto} ({p.unidade})</option>
+                                <option key={p.codigo} value={p.codigo}>{p.produto} - R$ {p.preco}</option>
                             ))}
                         </select>
                     </div>

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { KANBAN_COLUMNS, Deal } from '../types/crm.types';
-import { Plus, DollarSign, User, MoreVertical } from 'lucide-react';
+import { Plus, User } from 'lucide-react';
 
 const INITIAL_DEALS: Deal[] = [
     {
