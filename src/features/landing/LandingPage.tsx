@@ -3,6 +3,7 @@ import { Navbar } from '../../components/layout/Navbar';
 import { Hero } from './components/Hero';
 import { Features } from './components/Features';
 import { Footer } from '../../components/layout/Footer';
+import { ChatWidget } from '../chat/components/ChatWidget';
 
 export const LandingPage = () => {
     return (
@@ -11,6 +12,7 @@ export const LandingPage = () => {
             <Hero />
             <Features />
             <Footer />
+            <ChatWidget />
         </div>
     );
 };
