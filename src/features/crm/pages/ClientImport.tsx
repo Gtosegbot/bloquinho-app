@@ -53,7 +53,20 @@ export const ClientImport = () => {
             {/* Headers ... */}
 
             <div className="grid md:grid-cols-2 gap-6">
-                {/* File Upload Section ... */}
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <Upload className="w-5 h-5 text-blue-600" />
+                        Importar CSV
+                    </h3>
+                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors">
+                        <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
+                        <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center">
+                            <Upload className="w-10 h-10 text-gray-300 mb-2" />
+                            <span className="text-blue-600 font-medium">Clique para selecionar</span>
+                            <span className="text-gray-400 text-sm">ou arraste o arquivo aqui</span>
+                        </label>
+                    </div>
+                </div>
 
                 <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
                     <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
