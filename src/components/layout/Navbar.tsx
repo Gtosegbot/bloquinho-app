@@ -1,5 +1,7 @@
 
 
+import { Link } from 'react-router-dom';
+
 export const Navbar = () => {
     return (
         <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
@@ -11,9 +13,10 @@ export const Navbar = () => {
                         </span>
                     </div>
                     <div className="hidden md:flex items-center space-x-8">
-                        <a href="#services" className="text-gray-600 hover:text-blue-600 transition-colors">Serviços</a>
-                        <a href="#about" className="text-gray-600 hover:text-blue-600 transition-colors">Sobre</a>
-                        <a href="#contact" className="text-gray-600 hover:text-blue-600 transition-colors">Contato</a>
+                        <Link to="/" className="text-gray-600 hover:text-blue-600 transition-colors">Início</Link>
+                        <Link to="/services" className="text-gray-600 hover:text-blue-600 transition-colors">Serviços</Link>
+                        <Link to="/about" className="text-gray-600 hover:text-blue-600 transition-colors">Sobre</Link>
+                        <Link to="/contact" className="text-gray-600 hover:text-blue-600 transition-colors">Contato</Link>
                         <button className="bg-blue-600 text-white px-6 py-2 rounded-full hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-500/30">
                             Orçamento Rápido
                         </button>
