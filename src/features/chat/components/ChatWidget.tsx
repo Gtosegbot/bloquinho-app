@@ -1,9 +1,7 @@
-```
-
-
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChatWindow } from './ChatWindow';
-import bloquinhoHead from '../../../assets/bloquinho.png'; // Assuming I can crop/use this, or use icon
+import bloquinhoHead from '../../../assets/bloquinho.png';
 
 export const ChatWidget = () => {
     const [isOpen, setIsOpen] = useState(false);
