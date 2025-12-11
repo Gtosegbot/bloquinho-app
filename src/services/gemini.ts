@@ -49,8 +49,9 @@ export const getGeminiResponse = async (userMessage: string) => {
         ]);
         const response = await result.response;
         return response.text();
-    } catch (error) {
+    } catch (error: any) {
         console.error("Gemini Error:", error);
-        return "Ops! Tive um pequeno problema técnico. Pode repetir? 🤕";
+        // Temporary debugging: Return raw error to user
+        return `Erro Técnico Detalhado: ${error.message || JSON.stringify(error)}`;
     }
 };
