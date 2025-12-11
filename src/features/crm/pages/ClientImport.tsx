@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Upload, Send } from 'lucide-react';
+import { Send } from 'lucide-react';
 
 import { n8nService } from '../../../services/n8nService';
 
@@ -8,7 +8,23 @@ export const ClientImport = () => {
     const [previewData, setPreviewData] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // ... (keep handleFileUpload)
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const text = event.target?.result as string;
+            const lines = text.split('\n');
+            // Mock parsing - just taking first 5 lines for preview
+            const preview = lines.slice(1, 6).map(line => {
+                const [name, phone, email, company] = line.split(',');
+                return { name, phone, email, company };
+            });
+            setPreviewData(preview);
+        };
+        reader.readAsText(file);
+    };
 
     const handleWhatsAppCampaign = async () => {
         if (previewData.length === 0) {
