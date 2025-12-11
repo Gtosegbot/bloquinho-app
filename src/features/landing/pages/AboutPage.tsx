@@ -2,7 +2,7 @@
 import { Navbar } from '../../../components/layout/Navbar';
 import { Footer } from '../../../components/layout/Footer';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Award, Users, Clock } from 'lucide-react';
+import { Award, Users, Clock } from 'lucide-react';
 import bloquinhoHead from '../../../assets/bloquinho.png';
 
 export const AboutPage = () => {
