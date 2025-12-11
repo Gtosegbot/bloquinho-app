@@ -1,7 +1,7 @@
 
 import { Outlet, NavLink } from 'react-router-dom';
 import { LayoutDashboard, Database, Calculator, LogOut } from 'lucide-react';
-import bloquinhoHead from '../../../assets/bloquinho.png'; // Re-using existing asset
+import bloquinhoHead from '../../assets/bloquinho.png'; // Corrected path
 
 export const AdminLayout = () => {
     return (
