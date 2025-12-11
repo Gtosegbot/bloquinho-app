@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Send } from 'lucide-react';
+import { Send, Upload } from 'lucide-react';
 
 import { n8nService } from '../../../services/n8nService';
 
