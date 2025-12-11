@@ -1,11 +1,28 @@
 import { useState } from 'react';
-import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap } from 'lucide-react';
-
+import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap, X, Brain } from 'lucide-react';
 import { n8nService } from '../../../services/n8nService';
+
+type CampaignType = 'whatsapp' | 'email' | 'sms' | 'scraper' | 'social' | 'ads';
+
+interface ScraperForm {
+    url: string;
+    description: string;
+}
+
+interface SocialForm {
+    topic: string;
+    tech: 'veo3' | 'sora' | 'nano_banana';
+}
 
 export const ClientImport = () => {
     const [previewData, setPreviewData] = useState<any[]>([]);
     const [loading, setLoading] = useState<string | null>(null);
+    const [activeModal, setActiveModal] = useState<CampaignType | null>(null);
+
+    // Forms State
+    const [scraperForm, setScraperForm] = useState<ScraperForm>({ url: '', description: '' });
+    const [socialForm, setSocialForm] = useState<SocialForm>({ topic: '', tech: 'nano_banana' });
+    const [emailSubject, setEmailSubject] = useState('');
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -15,7 +32,6 @@ export const ClientImport = () => {
         reader.onload = (event) => {
             const text = event.target?.result as string;
             const lines = text.split('\n');
-            // Mock parsing - just taking first 5 lines for preview
             const preview = lines.slice(1, 6).map(line => {
                 const [name, phone, email, company] = line.split(',');
                 return { name, phone, email, company };
@@ -25,42 +41,34 @@ export const ClientImport = () => {
         reader.readAsText(file);
     };
 
-    const handleCampaign = async (type: 'whatsapp' | 'email' | 'sms' | 'scraper' | 'social' | 'ads') => {
+    const openModal = (type: CampaignType) => {
         if (['whatsapp', 'email', 'sms'].includes(type) && previewData.length === 0) {
             alert('Importe uma lista de clientes primeiro para esta campanha!');
             return;
         }
+        setActiveModal(type);
+    };
 
+    const submitAction = async () => {
+        if (!activeModal) return;
+
+        setLoading(activeModal);
         let payload: any = { clients: previewData };
 
-        // Custom prompts based on type
-        if (type === 'scraper') {
-            const url = prompt("Digite a URL para raspar dados:");
-            if (!url) return;
-            payload = { url };
-        }
-        else if (type === 'email') {
-            const subject = prompt("Assunto do E-mail:");
-            if (!subject) return;
-            payload = { ...payload, subject, campaignName: 'Email Mkt Manual' };
-        }
-        else if (type === 'social') {
-            const topic = prompt("Sobre qual tema será o vídeo?");
-            if (!topic) return;
-            payload = { topic };
+        if (activeModal === 'scraper') {
+            payload = { ...scraperForm };
+        } else if (activeModal === 'social') {
+            payload = { ...socialForm };
+        } else if (activeModal === 'email') {
+            payload = { ...payload, subject: emailSubject, campaignName: 'Email Mkt Manual' };
         }
 
-        if (!confirm(`Confirmar disparo de ${type.toUpperCase()}?`)) return;
-
-        setLoading(type);
         try {
-            switch (type) {
+            switch (activeModal) {
                 case 'whatsapp':
                     await n8nService.triggerWhatsAppCampaign({ campaignName: 'Wpp Manual', clients: previewData });
                     break;
                 case 'email':
-                    await n8nService.triggerWorkflow('EMAIL', payload);
-                    break;
                 case 'sms':
                     await n8nService.triggerWorkflow('SMS', payload);
                     break;

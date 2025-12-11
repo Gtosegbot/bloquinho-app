@@ -19,6 +19,9 @@ export interface Deal {
   createdAt: number;
   updatedAt: number;
   notes?: string;
+  description?: string;
+  customerPhone?: string;
+  customerEmail?: string;
 }
 
 export interface KanbanColumn {
