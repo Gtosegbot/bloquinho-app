@@ -20,6 +20,7 @@ const INITIAL_DEALS: Deal[] = [
 ];
 
 export const KanbanBoard = () => {
+    const [deals, setDeals] = useState<Deal[]>(INITIAL_DEALS);
     const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
 
     const onDragEnd = (result: DropResult) => {

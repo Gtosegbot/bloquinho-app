@@ -122,22 +122,22 @@ export const ClientImport = () => {
                         <CampaignButton
                             icon={<Send className="w-4 h-4" />}
                             label="Disparo WhatsApp"
-                            desc="Enviar p/ lista importada"
-                            onClick={() => handleCampaign('whatsapp')}
+                            desc="Campanha Ativa"
+                            onClick={() => openModal('whatsapp')}
                             loading={loading === 'whatsapp'}
                         />
                         <CampaignButton
                             icon={<Mail className="w-4 h-4" />}
                             label="Campanha de Email"
                             desc="Newsletter / Promoção"
-                            onClick={() => handleCampaign('email')}
+                            onClick={() => openModal('email')}
                             loading={loading === 'email'}
                         />
                         <CampaignButton
                             icon={<MessageSquare className="w-4 h-4" />}
                             label="Disparo SMS"
                             desc="Avisos curtos"
-                            onClick={() => handleCampaign('sms')}
+                            onClick={() => openModal('sms')}
                             loading={loading === 'sms'}
                         />
                         <div className="h-px bg-gray-100 my-2"></div>
@@ -145,21 +145,21 @@ export const ClientImport = () => {
                             icon={<Globe className="w-4 h-4" />}
                             label="Web Scraper"
                             desc="Extrair leads de URL"
-                            onClick={() => handleCampaign('scraper')}
+                            onClick={() => openModal('scraper')}
                             loading={loading === 'scraper'}
                         />
                         <CampaignButton
                             icon={<Video className="w-4 h-4" />}
                             label="Criar Vídeo Social"
                             desc="Shorts/Reels Automático"
-                            onClick={() => handleCampaign('social')}
+                            onClick={() => openModal('social')}
                             loading={loading === 'social'}
                         />
                         <CampaignButton
                             icon={<BarChart className="w-4 h-4" />}
                             label="Gestão de Tráfego"
                             desc="Relatório Nano Ads"
-                            onClick={() => handleCampaign('ads')}
+                            onClick={() => openModal('ads')}
                             loading={loading === 'ads'}
                         />
                     </div>
@@ -196,8 +196,120 @@ export const ClientImport = () => {
                     </div>
                 </div>
             )}
+
+            {/* Universal Automation Modal */}
+            {activeModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900 capitalize flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-yellow-500" />
+                                {activeModal === 'social' ? 'Criar Comercial' : activeModal === 'scraper' ? 'Configurar Scraper' : 'Nova Automação'}
+                            </h2>
+                            <button onClick={() => setActiveModal(null)} className="text-gray-400 hover:text-gray-600">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {renderModalContent()}
+
+                        <div className="mt-8 pt-4 border-t border-gray-100 flex gap-3">
+                            <button
+                                onClick={() => setActiveModal(null)}
+                                className="flex-1 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={submitAction}
+                                disabled={!!loading}
+                                className="flex-1 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex justify-center items-center gap-2"
+                            >
+                                {loading ? 'Enviando...' : 'Executar Ação'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
+};
+
+const renderModalContent = () => {
+    switch (activeModal) {
+        case 'social':
+            return (
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tecnologia de Vídeo</label>
+                        <select
+                            value={socialForm.tech}
+                            onChange={e => setSocialForm({ ...socialForm, tech: e.target.value as any })}
+                            className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                        >
+                            <option value="nano_banana">Nano Banana (Rápido)</option>
+                            <option value="veo3">Google VEO3 (Alta Qualidade)</option>
+                            <option value="sora">OpenAI Sora (Cinematográfico)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Prompt / Roteiro do Comercial</label>
+                        <textarea
+                            value={socialForm.topic}
+                            onChange={e => setSocialForm({ ...socialForm, topic: e.target.value })}
+                            className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                            placeholder="Descreva como deve ser o vídeo, produto em destaque, estilo visual..."
+                        />
+                    </div>
+                </div>
+            );
+        case 'scraper':
+            return (
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">URL Alvo</label>
+                        <input
+                            type="url"
+                            value={scraperForm.url}
+                            onChange={e => setScraperForm({ ...scraperForm, url: e.target.value })}
+                            className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                            placeholder="https://..."
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">O que buscar?</label>
+                        <textarea
+                            value={scraperForm.description}
+                            onChange={e => setScraperForm({ ...scraperForm, description: e.target.value })}
+                            className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                            placeholder="Ex: Buscar leads de empresas de construção, emails e telefones..."
+                        />
+                    </div>
+                </div>
+            );
+        case 'email':
+            return (
+                <div className="space-y-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Assunto do E-mail</label>
+                        <input
+                            value={emailSubject}
+                            onChange={e => setEmailSubject(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                            placeholder="Oferta Especial..."
+                        />
+                    </div>
+                    <p className="text-sm text-gray-500">O corpo do email será gerado automaticamente pela IA com base no perfil do cliente.</p>
+                </div>
+            );
+        default:
+            return (
+                <div className="text-center py-6 text-gray-600">
+                    <p>Confirmar execução da automação <strong>{activeModal?.toUpperCase()}</strong>?</p>
+                    {activeModal === 'whatsapp' && <p className="text-sm mt-2 text-gray-400">Será enviado para {previewData.length} contatos.</p>}
+                </div>
+            );
+    }
 };
 
 // Helper Component for consistency
