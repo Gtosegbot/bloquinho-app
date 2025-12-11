@@ -1,3 +1,4 @@
+import { getGeminiResponse } from '../../services/gemini';
 
 export interface Message {
     id: string;
@@ -6,11 +7,7 @@ export interface Message {
     timestamp: Date;
 }
 
-// Mock service for now, will connect to n8n later
+// Connected to Gemini "Internal RAG"
 export const sendMessageToN8N = async (text: string): Promise<string> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    // Return a mock response based on input
     return `O Bloquinho ouviu: "${text}". Em breve estarei conectado ao meu cérebro Gemini 2.5! 🧠`;
 };
