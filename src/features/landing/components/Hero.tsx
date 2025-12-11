@@ -1,5 +1,6 @@
 
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import bloquinhoImg from '../../../assets/bloquinho.png';
 
 export const Hero = () => {
@@ -28,9 +29,9 @@ export const Hero = () => {
                             >
                                 Falar com Bloquinho
                             </button>
-                            <button className="px-8 py-4 bg-white text-gray-700 border-2 border-gray-100 rounded-xl font-bold text-lg hover:border-blue-100 hover:bg-blue-50 transition-all">
+                            <Link to="/services" className="px-8 py-4 bg-white text-gray-700 border-2 border-gray-100 rounded-xl font-bold text-lg hover:border-blue-100 hover:bg-blue-50 transition-all flex items-center justify-center">
                                 Ver Nossos Serviços
-                            </button>
+                            </Link>
                         </div>
                     </motion.div>
 
