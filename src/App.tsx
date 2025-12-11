@@ -24,10 +24,11 @@ function App() {
                     {/* Admin Routes (Protected) */}
                     <Route element={<ProtectedRoute />}>
                         <Route path="/admin" element={<AdminLayout />}>
-                            <Route index element={<Navigate to="/admin/knowledge" replace />} />
-                            <Route path="dashboard" element={<div className="p-4">Dashboard CRM (Em Breve)</div>} />
+                            <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                            <Route path="dashboard" element={<KanbanBoard />} />
+                            <Route path="clients" element={<ClientImport />} />
                             <Route path="knowledge" element={<KnowledgeBase />} />
-                            <Route path="calculator" element={<div className="p-4">Calculadora (Em Breve)</div>} />
+                            <Route path="calculator" element={<Calculator />} />
                         </Route>
                     </Route>
                 </Routes>

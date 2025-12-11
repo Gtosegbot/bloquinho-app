@@ -1,6 +1,6 @@
 
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Database, Calculator, LogOut } from 'lucide-react';
+import { LayoutDashboard, Database, Calculator, LogOut, Users } from 'lucide-react';
 import bloquinhoHead from '../../assets/bloquinho.png'; // Corrected path
 
 export const AdminLayout = () => {
@@ -17,21 +17,28 @@ export const AdminLayout = () => {
 
                 <nav className="flex-1 p-4 space-y-2">
                     <NavLink
-                        to="/admin/dashboard"
+                        to="dashboard"
                         className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                         <LayoutDashboard className="w-5 h-5" />
-                        Painel
+                        Funil de Vendas (CRM)
                     </NavLink>
                     <NavLink
-                        to="/admin/knowledge"
+                        to="clients"
+                        className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                    >
+                        <Users className="w-5 h-5" />
+                        Clientes & Importação
+                    </NavLink>
+                    <NavLink
+                        to="knowledge"
                         className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                         <Database className="w-5 h-5" />
                         Conhecimento (RAG)
                     </NavLink>
                     <NavLink
-                        to="/admin/calculator"
+                        to="calculator"
                         className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
                     >
                         <Calculator className="w-5 h-5" />
