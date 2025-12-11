@@ -1,4 +1,5 @@
-import { getGeminiResponse } from '../../services/gemini';
+
+import { getGeminiResponse } from '../../../services/gemini';
 
 export interface Message {
     id: string;
@@ -9,5 +10,7 @@ export interface Message {
 
 // Connected to Gemini "Internal RAG"
 export const sendMessageToN8N = async (text: string): Promise<string> => {
-    return `O Bloquinho ouviu: "${text}". Em breve estarei conectado ao meu cérebro Gemini 2.5! 🧠`;
+    // Call Gemini Service
+    const response = await getGeminiResponse(text);
+    return response;
 };
