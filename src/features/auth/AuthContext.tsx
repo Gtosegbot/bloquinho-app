@@ -4,7 +4,8 @@ import { User, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged 
 import { auth } from '../../lib/firebase';
 
 // Super Admins hardcoded for security bootstrap
-'gtosegbot@gmail.com',
+const ADMIN_EMAILS = [
+    'gtosegbot@gmail.com',
     'admgtoseg@gmail.com',
     'disparoseguroback@gmail.com',
     'flavio.paifilho@gmail.com',
