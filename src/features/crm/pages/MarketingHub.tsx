@@ -1,10 +1,13 @@
 
-import { useState } from 'react';
-import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap, X, Brain } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap, X, Brain, Users, Tag, CheckSquare, Square, Filter } from 'lucide-react';
 import { mcpService, MCP_ENDPOINTS } from '../../../services/mcpService';
+import { crmService } from '../../../services/crmService';
 import { EmailSelector } from '../components/EmailSelector';
+import { Customer } from '../../crm/types/crm.types';
 
 type CampaignType = 'whatsapp' | 'email' | 'sms' | 'scraper' | 'social' | 'ads';
+type ViewMode = 'import' | 'database';
 
 interface ScraperForm {
     url: string;
@@ -17,10 +20,68 @@ interface SocialForm {
 }
 
 export const MarketingHub = () => {
+    // Data State
     const [previewData, setPreviewData] = useState<any[]>([]);
+    const [dbClients, setDbClients] = useState<Customer[]>([]);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [viewMode, setViewMode] = useState<ViewMode>('database'); // Default to database view if empty import
+
+    // UI State
     const [loading, setLoading] = useState<string | null>(null);
     const [activeModal, setActiveModal] = useState<CampaignType | null>(null);
     const [logs, setLogs] = useState<string[]>([]);
+    const [showTagModal, setShowTagModal] = useState(false);
+    const [newTag, setNewTag] = useState('');
+
+    useEffect(() => {
+        loadClients();
+    }, []);
+
+    const loadClients = async () => {
+        const clients = await crmService.getCustomers();
+        setDbClients(clients);
+        // If we have clients, default to database view
+        if (clients.length > 0 && previewData.length === 0) {
+            setViewMode('database');
+        }
+    };
+
+    const toggleSelectAll = () => {
+        if (selectedIds.length === dbClients.length) {
+            setSelectedIds([]);
+        } else {
+            setSelectedIds(dbClients.map(c => c.id));
+        }
+    };
+
+    const toggleSelectOne = (id: string) => {
+        if (selectedIds.includes(id)) {
+            setSelectedIds(selectedIds.filter(sid => sid !== id));
+        } else {
+            setSelectedIds([...selectedIds, id]);
+        }
+    };
+
+    const handleAddTag = async () => {
+        if (!newTag || selectedIds.length === 0) return;
+        setLoading('tagging');
+        let count = 0;
+        for (const id of selectedIds) {
+            const client = dbClients.find(c => c.id === id);
+            if (client) {
+                const updatedTags = [...(client.tags || []), newTag];
+                // Remove duplicates
+                const uniqueTags = [...new Set(updatedTags)];
+                await crmService.updateCustomerTags(id, uniqueTags);
+                count++;
+            }
+        }
+        addLog(`✅ Tag "${newTag}" adicionada a ${count} clientes.`);
+        setNewTag('');
+        setShowTagModal(false);
+        setLoading(null);
+        loadClients(); // Refresh
+    };
 
     // Forms State
     const [scraperForm, setScraperForm] = useState<ScraperForm>({ url: '', description: '' });
@@ -62,7 +123,7 @@ export const MarketingHub = () => {
             // Assumption: I will fix imports in next step if missing.
 
             // Note: Parallel execution might be faster but let's do sequential for reliability first or Promise.all chunks.
-            const { crmService } = await import('../../../services/crmService');
+            // Dynamic import removed (now static)
 
             for (const contact of previewData) {
                 // 1. Sync Customer
@@ -101,6 +162,8 @@ export const MarketingHub = () => {
             addLog(`✅ Sucesso! ${successCount} leads criados no Kanban.`);
             alert(`Importação concluída! ${successCount} novos leads.`);
             setPreviewData([]); // Clear preview
+            loadClients(); // Refresh DB list
+            setViewMode('database'); // Switch to database view
         } catch (error) {
             console.error("Import error:", error);
             addLog("❌ Erro durante a importação. Verifique o console.");
@@ -122,19 +185,32 @@ export const MarketingHub = () => {
                 const cols = line.split(',');
                 if (cols.length < 2) return null; // Skip empty/invalid lines
 
+                const email = cols[1]?.trim();
+                const phone = cols[2]?.trim();
+                let name = cols[0]?.trim();
+
+                // Validation: Must have at least Name OR Email OR Phone
+                if (!name && !email && !phone) return null;
+
+                // Fallback Name
+                if (!name) {
+                    name = email ? `Cliente (${email})` : `Cliente (${phone})`;
+                }
+
                 return {
-                    name: cols[0]?.trim(),
-                    email: cols[1]?.trim(),
-                    phone: cols[2]?.trim(),
+                    name,
+                    email,
+                    phone,
                     address: cols[3]?.trim(),
                     city: cols[4]?.trim(),
                     state: cols[5]?.trim(),
                     country: cols[6]?.trim(),
                     zip: cols[7]?.trim(),
                     dob: cols[8]?.trim(),
-                    notes: cols[9]?.trim()
+                    notes: cols[9]?.trim(),
+                    tags: [] // Initialize empty tags
                 };
-            }).filter(u => u && u.name);
+            }).filter(u => u !== null);
 
             setPreviewData(preview);
             addLog(`Arquivo carregado: ${preview.length} contatos encontrados.`);
@@ -143,11 +219,34 @@ export const MarketingHub = () => {
     };
 
     const openModal = (type: CampaignType) => {
-        if (['whatsapp', 'email', 'sms'].includes(type) && previewData.length === 0) {
-            alert('Importe uma lista de clientes primeiro para esta campanha!');
-            return;
+        if (['whatsapp', 'email', 'sms'].includes(type)) {
+            if (viewMode === 'import' && previewData.length === 0) {
+                alert('Importe uma lista primeiro!');
+                return;
+            }
+            if (viewMode === 'database' && selectedIds.length === 0) {
+                alert('Selecione pelo menos um cliente da lista!');
+                return;
+            }
         }
         setActiveModal(type);
+    };
+
+    // Validation Helpers
+    const isValidEmail = (email: string) => {
+        if (!email) return false;
+        const lower = email.toLowerCase();
+        // Reject if contains "email" as a placeholder word or is clearly invalid
+        if (lower.includes('email') || !lower.includes('@')) return false;
+        return true;
+    };
+
+    const isValidPhone = (phone: string) => {
+        if (!phone) return false;
+        const lower = phone.toLowerCase();
+        // Reject if contains "phone" or "telefone" or has no digits
+        if (lower.includes('phone') || lower.includes('tel') || !/\d/.test(phone)) return false;
+        return true;
     };
 
     const submitAction = async () => {
@@ -158,33 +257,82 @@ export const MarketingHub = () => {
 
         try {
             switch (activeModal) {
-                case 'whatsapp':
-                    // Mapping to list of phones
-                    const phones = previewData.map(c => c.phone);
-                    await mcpService.sendWhatsApp("Olá! Campanha teste via MCP.", phones);
-                    addLog('✅ WhatsApp: Disparo solicitado via MCP.');
-                    break;
+                case 'whatsapp': {
+                    let recipients: any[] = [];
+                    if (viewMode === 'database') {
+                        recipients = dbClients.filter(c => selectedIds.includes(c.id));
+                    } else {
+                        recipients = previewData;
+                    }
 
-                case 'email':
-                    // Hybrid Email Payload
-                    const recipients = previewData.map(c => c.email).filter(e => e);
+                    // Filter valid phones only
+                    const phones = recipients
+                        .map(c => c.phone)
+                        .filter(p => p && isValidPhone(p));
+
+                    if (phones.length === 0) {
+                        alert('Nenhum telefone válido encontrado nos contatos selecionados.');
+                        setLoading(null);
+                        return;
+                    }
+
+                    await mcpService.sendWhatsApp("Olá! Campanha teste via MCP.", phones);
+                    addLog(`✅ WhatsApp: Disparo solicitado para ${phones.length} contatos válidos.`);
+                    break;
+                }
+
+                case 'email': {
+                    let recipients: any[] = [];
+                    if (viewMode === 'database') {
+                        recipients = dbClients.filter(c => selectedIds.includes(c.id));
+                    } else {
+                        recipients = previewData;
+                    }
+
+                    // Filter valid emails
+                    const emailAddresses = recipients
+                        .map(c => c.email)
+                        .filter(e => e && isValidEmail(e));
+
+                    if (emailAddresses.length === 0) {
+                        alert('Nenhum email válido encontrado nos contatos selecionados.');
+                        setLoading(null);
+                        return;
+                    }
+
                     await mcpService.sendEmailCampaign({
                         subject: emailSubject,
                         body: emailBody || "<p>Olá, oferta especial!</p>",
-                        recipients
+                        recipients: emailAddresses
                     });
-                    addLog('✅ Email: Campanha enviada para processamento.');
+                    addLog(`✅ Email: Enviado para ${emailAddresses.length} endereços válidos.`);
                     break;
+                }
 
-                case 'sms':
-                    // Advanced SMS Payload
+                case 'sms': {
+                    let recipients: any[] = [];
+                    if (viewMode === 'database') {
+                        recipients = dbClients.filter(c => selectedIds.includes(c.id));
+                    } else {
+                        recipients = previewData;
+                    }
+
+                    const validRecipients = recipients.filter(c => c.phone && isValidPhone(c.phone));
+
+                    if (validRecipients.length === 0) {
+                        alert('Nenhum telefone válido para SMS.');
+                        setLoading(null);
+                        return;
+                    }
+
                     await mcpService.sendSMSCampaign(
                         "Campanha SMS Manual",
                         smsMessage || "Oferta imperdível!",
-                        previewData
+                        validRecipients
                     );
-                    addLog('✅ SMS: Lote de mensagens enviado ao gateway.');
+                    addLog(`✅ SMS: Enviado para ${validRecipients.length} contatos válidos.`);
                     break;
+                }
 
                 case 'scraper':
                     await mcpService.runScraper(scraperForm.url, scraperForm.description);
@@ -449,34 +597,133 @@ export const MarketingHub = () => {
                         />
                     </div>
 
-                    {previewData.length > 0 && (
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-bold text-gray-800">Preview ({previewData.length})</h3>
-                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Pronto</span>
+                    {/* View Switcher & Toolbar */}
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setViewMode('database')}
+                                    className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 ${viewMode === 'database' ? 'bg-purple-100 text-purple-700' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    <Users className="w-4 h-4" /> Base de Clientes ({dbClients.length})
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('import')}
+                                    className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 ${viewMode === 'import' ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    <Upload className="w-4 h-4" /> Importação ({previewData.length})
+                                </button>
                             </div>
-                            <div className="overflow-x-auto max-h-[300px]">
+
+                            {viewMode === 'database' && (
+                                <div className="flex gap-2">
+                                    {selectedIds.length > 0 && (
+                                        <button
+                                            onClick={() => setShowTagModal(true)}
+                                            className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center gap-1 transition-colors"
+                                        >
+                                            <Tag className="w-3 h-3" />
+                                            Adicionar Tag ({selectedIds.length})
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* List Content */}
+                        <div className="overflow-x-auto max-h-[500px]">
+                            {viewMode === 'import' && previewData.length === 0 && (
+                                <div className="text-center py-10 text-gray-400">
+                                    <Upload className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                    <p>Nenhum arquivo CSV carregado para pré-visualização.</p>
+                                </div>
+                            )}
+
+                            {(viewMode === 'database' || (viewMode === 'import' && previewData.length > 0)) && (
                                 <table className="w-full text-left border-collapse text-sm">
-                                    <thead className="sticky top-0 bg-white">
-                                        <tr className="border-b border-gray-100 text-gray-500">
-                                            <th className="py-2">Nome</th>
-                                            <th className="py-2">Telefone</th>
-                                            <th className="py-2">Email</th>
+                                    <thead className="sticky top-0 bg-white z-10 shadow-sm">
+                                        <tr className="border-b border-gray-100 text-gray-500 bg-gray-50/50">
+                                            {viewMode === 'database' && (
+                                                <th className="py-2 px-3 w-10">
+                                                    <button onClick={toggleSelectAll}>
+                                                        {selectedIds.length === dbClients.length && dbClients.length > 0 ?
+                                                            <CheckSquare className="w-4 h-4 text-purple-600" /> :
+                                                            <Square className="w-4 h-4 text-gray-300" />
+                                                        }
+                                                    </button>
+                                                </th>
+                                            )}
+                                            <th className="py-2 px-3">Nome</th>
+                                            <th className="py-2 px-3">Email/Contato</th>
+                                            {viewMode === 'database' && <th className="py-2 px-3">Tags</th>}
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {previewData.map((row, idx) => (
-                                            <tr key={idx} className="border-b border-gray-50 text-gray-700 font-mono text-xs">
-                                                <td className="py-2">{row.name}</td>
-                                                <td className="py-2">{row.phone}</td>
-                                                <td className="py-2">{row.email}</td>
-                                            </tr>
-                                        ))}
+                                        {(viewMode === 'database' ? dbClients : previewData).map((row, idx) => {
+                                            // Handle potential missing IDs in preview by using index fallback
+                                            const rowId = (row as Customer).id || `preview-${idx}`;
+                                            const isSelected = selectedIds.includes(rowId);
+
+                                            return (
+                                                <tr key={rowId} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${isSelected ? 'bg-purple-50 hover:bg-purple-50' : ''}`}>
+                                                    {viewMode === 'database' && (
+                                                        <td className="py-2 px-3">
+                                                            <button onClick={() => toggleSelectOne(rowId)}>
+                                                                {isSelected ?
+                                                                    <CheckSquare className="w-4 h-4 text-purple-600" /> :
+                                                                    <Square className="w-4 h-4 text-gray-300" />
+                                                                }
+                                                            </button>
+                                                        </td>
+                                                    )}
+                                                    <td className="py-2 px-3">
+                                                        <div className="font-medium text-gray-800">{row.name || 'Sem Nome'}</div>
+                                                    </td>
+                                                    <td className="py-2 px-3 text-xs font-mono text-gray-600">
+                                                        <div>{row.email}</div>
+                                                        <div>{row.phone}</div>
+                                                    </td>
+                                                    {viewMode === 'database' && (
+                                                        <td className="py-2 px-3">
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {(row.tags || []).map((tag: string, tIdx: number) => (
+                                                                    <span key={tIdx} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] border border-gray-200">
+                                                                        {tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                    )}
+                                                </tr>
+                                            );
+                                        })}
                                     </tbody>
                                 </table>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Tag Modal */}
+                    {showTagModal && (
+                        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-[60]">
+                            <div className="bg-white p-4 rounded-xl shadow-xl w-64 animate-fade-in">
+                                <h4 className="font-bold text-gray-800 mb-2">Nova Tag</h4>
+                                <input
+                                    autoFocus
+                                    className="w-full border p-2 rounded mb-2 text-sm"
+                                    placeholder="Ex: VIP, Quente..."
+                                    value={newTag}
+                                    onChange={e => setNewTag(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleAddTag()}
+                                />
+                                <div className="flex gap-2">
+                                    <button onClick={() => setShowTagModal(false)} className="flex-1 py-1 text-xs text-gray-500 bg-gray-100 rounded">Cancelar</button>
+                                    <button onClick={handleAddTag} className="flex-1 py-1 text-xs text-white bg-purple-600 rounded">Salvar</button>
+                                </div>
                             </div>
                         </div>
                     )}
+
                 </div>
             </div>
 
