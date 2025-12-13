@@ -20,8 +20,9 @@ export const MCP_ENDPOINTS = {
     NANO_ADS: `${WEBHOOK_BASE}/nanoVeo3`,        // Image Ads
 
     // Intelligence & Analytics
-    ANALYTICS: `${WEBHOOK_BASE}/gestorTrafego`,   // Traffic Manager AI
-    MCP_SERVER: 'https://workflow.disparoseguro.com/mcp-server/http' // Advanced Bidirectional MCP
+    // Intelligence & Analytics
+    ANALYTICS: `${WEBHOOK_BASE}/gestorTrafego`,
+    MCP_SERVER: 'https://workflow.disparoseguro.com/mcp-server/http'
 };
 
 // Types for Payload Structures
@@ -30,6 +31,28 @@ export interface McpPayload {
 }
 
 export const mcpService = {
+    /**
+     * Initializes the connection to the MCP Server
+     * This is a "handshake" to ensure the server is reachable and wake up the n8n instance
+     */
+    async init() {
+        try {
+            console.log("🔌 Initializing MCP Connection...");
+            const response = await fetch(MCP_ENDPOINTS.MCP_SERVER, {
+                method: 'GET', // Checks availability
+                headers: { 'Content-Type': 'application/json' }
+            });
+            if (response.ok) {
+                console.log("✅ MCP Server Connected");
+                return true;
+            }
+        } catch (error) {
+            console.warn("⚠️ MCP Server Link skipped (Fallback to Webhook Mode):", error);
+            // We don't throw here because we want to fallback to webhooks
+            return false;
+        }
+    },
+
     /**
      * Generic MCP Trigger (POST)
      * Handles the communication with n8n webhooks
@@ -48,7 +71,8 @@ export const mcpService = {
             });
 
             if (!response.ok) {
-                throw new Error(`MCP Error ${response.status}: ${response.statusText}`);
+                const errorText = await response.text();
+                throw new Error(`MCP Error ${response.status}: ${errorText || response.statusText}`);
             }
 
             const data = await response.json();
@@ -63,21 +87,38 @@ export const mcpService = {
 
     /**
      * Triggers the "Hybrid MCP" for advanced Email Campaigns
-     * Uses the specific JSON structure requested for the internal MCP server if needed,
-     * or falls back to the standard webhook if 'simple' mode is preferred.
+     * Uses a simplified flat payload to ensure compatibility with n8n Webhook node
+     */
+    /**
+     * Triggers the "Hybrid MCP" for advanced Email Campaigns
+     * Uses a Batch Array pattern to match the n8n "Split In Batches" or compatible node structure.
+     * Sending an array of objects allows n8n to process each email individually.
      */
     async sendEmailCampaign(campaignData: { subject: string; body: string; recipients: string[] }) {
-        // Using the standard webhook as the primary stable method based on "Reforçando..." instruction
-        return this.call(MCP_ENDPOINTS.EMAIL, {
-            campaignName: campaignData.subject,
+        // Ensure initialization (fire and forget)
+        this.init();
+
+        // 1. Map each recipient to a simplified object matching standard Email Node parameters
+        const payload = campaignData.recipients.map(toEmail => ({
+            // Matches 'MailBaby' and standard n8n node parameters
+            toEmail: toEmail,
             subject: campaignData.subject,
-            html: campaignData.body,
-            to: campaignData.recipients,
-            type: 'campanha-ativa'
-        });
+            message: campaignData.body, // The user's expected JSON showed 'message' for the HTML content
+            emailType: 'html',
+            senderName: 'Disparo Seguro',
+            replyTo: 'comercial@disparoseguro.com', // Best practice default
+
+            // Metadata for tracking
+            campaignName: campaignData.subject,
+            timestamp: new Date().toISOString()
+        }));
+
+        // 2. Send the ARRAY. n8n will receive 'body' as [ { ... }, { ... } ]
+        return this.call(MCP_ENDPOINTS.EMAIL, payload);
     },
 
     async sendWhatsApp(message: string, phones: string[]) {
+        this.init();
         return this.call(MCP_ENDPOINTS.WHATSAPP, {
             message,
             phones,
@@ -86,6 +127,7 @@ export const mcpService = {
     },
 
     async runScraper(url: string, instructions: string) {
+        this.init();
         return this.call(MCP_ENDPOINTS.SCRAPER, {
             url,
             prompt: instructions
@@ -93,6 +135,7 @@ export const mcpService = {
     },
 
     async generateVideo(prompt: string, tech: 'veo3' | 'sora' | 'nano_banana') {
+        this.init();
         return this.call(MCP_ENDPOINTS.SOCIAL_VIDEO, {
             prompt,
             tech_preference: tech
