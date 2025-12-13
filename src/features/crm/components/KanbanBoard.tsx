@@ -289,8 +289,9 @@ export const KanbanBoard = () => {
                                 </div>
                             </div>
                         </div>
-                    </div >
+                    </div>
+                </div>
             )}
-                </div >
-            );
+        </div>
+    );
 };
