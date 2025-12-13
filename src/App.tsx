@@ -9,7 +9,7 @@ import { LoginPage } from './features/auth/LoginPage';
 import { AuthProvider } from './features/auth/AuthContext';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { KanbanBoard } from './features/crm/components/KanbanBoard';
-import { ClientImport } from './features/crm/pages/ClientImport';
+import { MarketingHub } from './features/crm/pages/MarketingHub';
 import { Calculator } from './features/admin/pages/Calculator';
 
 function App() {
@@ -29,7 +29,7 @@ function App() {
                         <Route path="/admin" element={<AdminLayout />}>
                             <Route index element={<Navigate to="/admin/dashboard" replace />} />
                             <Route path="dashboard" element={<KanbanBoard />} />
-                            <Route path="clients" element={<ClientImport />} />
+                            <Route path="clients" element={<MarketingHub />} />
                             <Route path="knowledge" element={<KnowledgeBase />} />
                             <Route path="calculator" element={<Calculator />} />
                         </Route>
