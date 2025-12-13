@@ -265,19 +265,22 @@ export const MarketingHub = () => {
                         recipients = previewData;
                     }
 
-                    // Filter valid phones only
-                    const phones = recipients
-                        .map(c => c.phone)
-                        .filter(p => p && isValidPhone(p));
+                    // Filter valid phones and map to strict object structure
+                    const validTargets = recipients
+                        .filter(c => c.phone && isValidPhone(c.phone))
+                        .map(c => ({
+                            name: c.name || 'Cliente',
+                            phone: c.phone
+                        }));
 
-                    if (phones.length === 0) {
+                    if (validTargets.length === 0) {
                         alert('Nenhum telefone válido encontrado nos contatos selecionados.');
                         setLoading(null);
                         return;
                     }
 
-                    await mcpService.sendWhatsApp("Olá! Campanha teste via MCP.", phones);
-                    addLog(`✅ WhatsApp: Disparo solicitado para ${phones.length} contatos válidos.`);
+                    await mcpService.sendWhatsApp("Olá! Campanha teste via MCP.", validTargets);
+                    addLog(`✅ WhatsApp: Disparo solicitado para ${validTargets.length} contatos válidos.`);
                     break;
                 }
 
@@ -289,12 +292,15 @@ export const MarketingHub = () => {
                         recipients = previewData;
                     }
 
-                    // Filter valid emails
-                    const emailAddresses = recipients
-                        .map(c => c.email)
-                        .filter(e => e && isValidEmail(e));
+                    // Filter valid emails and map to { name, email }
+                    const validTargets = recipients
+                        .filter(c => c.email && isValidEmail(c.email))
+                        .map(c => ({
+                            name: c.name || 'Cliente',
+                            email: c.email
+                        }));
 
-                    if (emailAddresses.length === 0) {
+                    if (validTargets.length === 0) {
                         alert('Nenhum email válido encontrado nos contatos selecionados.');
                         setLoading(null);
                         return;
@@ -303,9 +309,9 @@ export const MarketingHub = () => {
                     await mcpService.sendEmailCampaign({
                         subject: emailSubject,
                         body: emailBody || "<p>Olá, oferta especial!</p>",
-                        recipients: emailAddresses
+                        recipients: validTargets // Now passing objects
                     });
-                    addLog(`✅ Email: Enviado para ${emailAddresses.length} endereços válidos.`);
+                    addLog(`✅ Email: Enviado para ${validTargets.length} endereços válidos.`);
                     break;
                 }
 
