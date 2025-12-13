@@ -245,46 +245,52 @@ export const KanbanBoard = () => {
                                         />
                                     </div>
                                 </div>
+
+                                <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                        <User className="w-4 h-4" /> Dados do Cliente
+                                    </h3>
+                                    <input
+                                        placeholder="Nome do Cliente"
+                                        value={selectedDeal.customerName}
+                                        onChange={e => setSelectedDeal({ ...selectedDeal, customerName: e.target.value })}
+                                        className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                    />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <input
+                                            placeholder="Telefone / WhatsApp"
+                                            value={selectedDeal.customerPhone || ''}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, customerPhone: e.target.value })}
+                                            className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                        />
+                                        <input
+                                            placeholder="Email"
+                                            value={selectedDeal.customerEmail || ''}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, customerEmail: e.target.value })}
+                                            className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Detalhes / Notas</label>
+                                    <textarea
+                                        rows={3}
+                                        value={selectedDeal.description || ''}
+                                        onChange={e => setSelectedDeal({ ...selectedDeal, description: e.target.value })}
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                        placeholder="Descreva o pedido..."
+                                    />
+                                </div>
+
+                                <div className="flex gap-3 pt-4">
+                                    <button onClick={() => setSelectedDeal(null)} className="flex-1 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
+                                    <button onClick={() => handleSaveDeal(selectedDeal)} className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">Salvar Alterações</button>
+                                </div>
                             </div>
                         </div>
-                        onChange={e => setSelectedDeal({ ...selectedDeal, customerName: e.target.value })}
-                        className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
-                        />
-                        <div className="grid grid-cols-2 gap-2">
-                            <input
-                                placeholder="Telefone / WhatsApp"
-                                value={selectedDeal.customerPhone || ''}
-                                onChange={e => setSelectedDeal({ ...selectedDeal, customerPhone: e.target.value })}
-                                className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
-                            />
-                            <input
-                                placeholder="Email"
-                                value={selectedDeal.customerEmail || ''}
-                                onChange={e => setSelectedDeal({ ...selectedDeal, customerEmail: e.target.value })}
-                                className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Detalhes / Notas</label>
-                        <textarea
-                            rows={3}
-                            value={selectedDeal.description || ''}
-                            onChange={e => setSelectedDeal({ ...selectedDeal, description: e.target.value })}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                            placeholder="Descreva o pedido..."
-                        />
-                    </div>
-
-                    <div className="flex gap-3 pt-4">
-                        <button onClick={() => setSelectedDeal(null)} className="flex-1 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
-                        <button onClick={() => handleSaveDeal(selectedDeal)} className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">Salvar Alterações</button>
-                    </div>
-                </div>
-                    </div>
-                </div >
+                    </div >
             )}
-        </div >
-    );
+                </div >
+            );
 };
