@@ -47,6 +47,66 @@ export const MarketingHub = () => {
         document.body.removeChild(link);
     };
 
+    const processImport = async () => {
+        if (previewData.length === 0) return;
+        setLoading('importing');
+        addLog(`Iniciando importação de ${previewData.length} contatos para o CRM...`);
+
+        let successCount = 0;
+        try {
+            // Import mcpService and crmService are already available? 
+            // We need to import crmService if not present.  Checking file... 
+            // File imports mcpService. We need `import { crmService } from '../../../services/crmService';` at top.
+            // Assumption: I will fix imports in next step if missing.
+
+            // Note: Parallel execution might be faster but let's do sequential for reliability first or Promise.all chunks.
+            const { crmService } = await import('../../../services/crmService');
+
+            for (const contact of previewData) {
+                // 1. Sync Customer
+                const customerId = await crmService.syncCustomer({
+                    name: contact.name,
+                    email: contact.email,
+                    phone: contact.phone,
+                    address: contact.address,
+                    city: contact.city,
+                    state: contact.state,
+                    country: contact.country,
+                    zip: contact.zip,
+                    dob: contact.dob,
+                    notes: contact.notes
+                });
+
+                if (customerId) {
+                    // 2. Create Deal (Lead)
+                    await crmService.createDeal({
+                        title: `Lead: ${contact.name}`,
+                        value: 0, // Default value, maybe 0 or estimated
+                        customerId: customerId,
+                        customerName: contact.name,
+                        customerEmail: contact.email,
+                        customerPhone: contact.phone,
+                        status: 'lead', // "Novos Leads" column
+                        priority: 'medium',
+                        paymentStatus: 'pending',
+                        paymentTerms: 'full',
+                        amountPaid: 0,
+                        description: `Importado via CSV. Notas: ${contact.notes || ''}`
+                    });
+                    successCount++;
+                }
+            }
+            addLog(`✅ Sucesso! ${successCount} leads criados no Kanban.`);
+            alert(`Importação concluída! ${successCount} novos leads.`);
+            setPreviewData([]); // Clear preview
+        } catch (error) {
+            console.error("Import error:", error);
+            addLog("❌ Erro durante a importação. Verifique o console.");
+        } finally {
+            setLoading(null);
+        }
+    };
+
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -272,6 +332,13 @@ export const MarketingHub = () => {
                             <Upload className="w-5 h-5 text-blue-600" />
                             1. Importar Base
                         </h3>
+                        {/* Status Message for large imports */}
+                        {loading === 'importing' && (
+                            <div className="mb-4 p-3 bg-blue-50 text-blue-700 text-sm rounded-lg flex items-center gap-2 animate-pulse">
+                                <Upload className="w-4 h-4" /> Processando contatos...
+                            </div>
+                        )}
+
                         <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors">
                             <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
                             <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center">
@@ -280,6 +347,22 @@ export const MarketingHub = () => {
                                 <span className="text-gray-400 text-xs mt-1">Nome, Email, Telefone, etc...</span>
                             </label>
                         </div>
+
+                        {previewData.length > 0 && (
+                            <div className="mt-4">
+                                <div className="text-xs text-center text-gray-500 mb-2">
+                                    {previewData.length} contatos prontos para importar.
+                                </div>
+                                <button
+                                    onClick={processImport}
+                                    disabled={loading === 'importing'}
+                                    className="w-full py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {loading === 'importing' ? 'Salvando...' : 'Confirmar Importação'}
+                                </button>
+                            </div>
+                        )}
+
                         <button
                             onClick={downloadTemplate}
                             className="w-full mt-2 py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 rounded-lg transition-colors flex items-center justify-center gap-2"

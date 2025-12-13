@@ -6,6 +6,14 @@ export interface Customer {
   email?: string;
   company?: string;
   createdAt: number;
+  // Extended fields for import
+  address?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  zip?: string;
+  dob?: string;
+  notes?: string;
 }
 
 export interface Deal {
