@@ -88,28 +88,34 @@ export const mcpService = {
     /**
      * Triggers the "Hybrid MCP" for advanced Email Campaigns
      * Uses a simplified flat payload to ensure compatibility with n8n Webhook node
-     */
-    /**
-     * Triggers the "Hybrid MCP" for advanced Email Campaigns
      * Uses a Batch Array pattern to match the n8n "Split In Batches" or compatible node structure.
      * Sending an array of objects allows n8n to process each email individually.
      */
-    async sendEmailCampaign(campaignData: { subject: string; body: string; recipients: string[] }) {
+    async sendEmailCampaign(campaignData: { subject: string; body: string; recipients: { name: string; email: string }[] }) {
         // Ensure initialization (fire and forget)
         this.init();
 
         // 1. Map each recipient to a simplified object matching standard Email Node parameters
-        const payload = campaignData.recipients.map(toEmail => ({
+        const payload = campaignData.recipients.map(client => ({
             // Matches 'MailBaby' and standard n8n node parameters
-            toEmail: toEmail,
+            toEmail: client.email,
+            users: client.name,
             subject: campaignData.subject,
-            message: campaignData.body, // The user's expected JSON showed 'message' for the HTML content
+            // Personalized Message
+            message: `Olá ${client.name ? client.name.split(' ')[0] : 'Cliente'},\n\n${campaignData.body}`,
             emailType: 'html',
             senderName: 'Disparo Seguro',
             replyTo: 'comercial@disparoseguro.com', // Best practice default
 
             // Metadata for tracking
             campaignName: campaignData.subject,
+            options: {
+                allowUnauthorizedCerts: false,
+                ccEmail: "",
+                bccEmail: "",
+                replyTo: "comercial@disparoseguro.com",
+                senderName: "Disparo Seguro"
+            },
             timestamp: new Date().toISOString()
         }));
 
@@ -117,13 +123,16 @@ export const mcpService = {
         return this.call(MCP_ENDPOINTS.EMAIL, payload);
     },
 
-    async sendWhatsApp(message: string, phones: string[]) {
+    async sendWhatsApp(baseMessage: string, clients: { name: string; phone: string }[]) {
         this.init();
-        return this.call(MCP_ENDPOINTS.WHATSAPP, {
-            message,
-            phones,
+
+        const payload = clients.map(client => ({
+            phone: client.phone,
+            message: `Olá ${client.name ? client.name.split(' ')[0] : 'Cliente'}! ${baseMessage}`,
             timestamp: new Date().toISOString()
-        });
+        }));
+
+        return this.call(MCP_ENDPOINTS.WHATSAPP, payload);
     },
 
     async runScraper(url: string, instructions: string) {
