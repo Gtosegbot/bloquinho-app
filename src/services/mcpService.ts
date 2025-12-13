@@ -122,10 +122,17 @@ export const mcpService = {
                 from_name: "Disparo Seguro",
                 brand_name: "Disparo Seguro",
                 lead_details: {
-                    id: client.phone.replace(/\D/g, ''), // Ensure numeric ID
+                    id: client.phone?.replace(/\D/g, '') || 'unknown',
                     name: client.name,
                     phone: client.phone,
                     email: client.email || null,
+                    address: client.address || null,
+                    city: client.city || null,
+                    state: client.state || null,
+                    country: client.country || null,
+                    zip: client.zip || null,
+                    dob: client.dob || null,
+                    notes: client.notes || null,
                     tags: [],
                     value: 0
                 },

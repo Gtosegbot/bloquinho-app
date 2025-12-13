@@ -32,6 +32,29 @@ export const MarketingHub = () => {
         setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
     };
 
+    const [scraperForm, setScraperForm] = useState<ScraperForm>({ url: '', description: '' });
+    const [socialForm, setSocialForm] = useState<SocialForm>({ topic: '', tech: 'nano_banana' });
+    const [emailSubject, setEmailSubject] = useState('');
+    const [emailBody, setEmailBody] = useState('');
+    const [smsMessage, setSmsMessage] = useState('');
+
+    const addLog = (msg: string) => {
+        setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
+    };
+
+    const downloadTemplate = () => {
+        const headers = ["Nome,Email,Telefone,Endereço,Cidade,Estado,País,CEP,Data de Nascimento,Observações"];
+        const sample = "João Silva,joao@exemplo.com,5511999998888,Rua Exemplo 123,São Paulo,SP,Brasil,01000-000,1990-01-01,Cliente VIP";
+        const csvContent = "data:text/csv;charset=utf-8," + [headers, sample].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "modelo_importacao.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -40,15 +63,24 @@ export const MarketingHub = () => {
         reader.onload = (event) => {
             const text = event.target?.result as string;
             const lines = text.split('\n');
-            const preview = lines.slice(1, 6).map(line => {
-                const [name, phone, email, company] = line.split(',');
+            const preview = lines.slice(1).map(line => {
+                // Basic CSV parser handling standard comma separation
+                const cols = line.split(',');
+                if (cols.length < 2) return null; // Skip empty/invalid lines
+
                 return {
-                    name: name?.trim(),
-                    phone: phone?.trim(),
-                    email: email?.trim(),
-                    company: company?.trim()
+                    name: cols[0]?.trim(),
+                    email: cols[1]?.trim(),
+                    phone: cols[2]?.trim(),
+                    address: cols[3]?.trim(),
+                    city: cols[4]?.trim(),
+                    state: cols[5]?.trim(),
+                    country: cols[6]?.trim(),
+                    zip: cols[7]?.trim(),
+                    dob: cols[8]?.trim(),
+                    notes: cols[9]?.trim()
                 };
-            }).filter(u => u.name); // Filter empty rows
+            }).filter(u => u && u.name);
 
             setPreviewData(preview);
             addLog(`Arquivo carregado: ${preview.length} contatos encontrados.`);
@@ -253,9 +285,15 @@ export const MarketingHub = () => {
                             <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center">
                                 <Upload className="w-10 h-10 text-gray-300 mb-2" />
                                 <span className="text-blue-600 font-medium">Selecionar CSV</span>
-                                <span className="text-gray-400 text-xs mt-1">Nome, Telefone, Email, Empresa</span>
+                                <span className="text-gray-400 text-xs mt-1">Nome, Email, Telefone, etc...</span>
                             </label>
                         </div>
+                        <button
+                            onClick={downloadTemplate}
+                            className="w-full mt-2 py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 rounded-lg transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Upload className="w-4 h-4 rotate-180" /> Baixar Modelo CSV
+                        </button>
                     </div>
 
                     <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm h-[300px] overflow-y-auto">
