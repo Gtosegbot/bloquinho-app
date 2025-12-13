@@ -174,354 +174,363 @@ export const MarketingHub = () => {
                     addLog('✅ Email: Campanha enviada para processamento.');
                     break;
 
-                    // ... imports
-                    import { EmailSelector } from '../components/EmailSelector';
-
-                    // ... inside component
-
-                    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
-
-                    // ... updated processImport
-                    const processImport = async () => {
-                        if (previewData.length === 0) return;
-                        setLoading('importing');
-                        addLog(`Iniciando importação de ${previewData.length} contatos...`);
-
-                        let successCount = 0;
-                        try {
-                            const { crmService } = await import('../../../services/crmService');
-
-                            // Process sequentially to avoid rate limits and better debugging
-                            for (const [index, contact] of previewData.entries()) {
-                                addLog(`Processando ${index + 1}/${previewData.length}: ${contact.name}`);
-
-                                try {
-                                    // 1. Sync Customer
-                                    const customerId = await crmService.syncCustomer({
-                                        name: contact.name,
-                                        email: contact.email,
-                                        phone: contact.phone,
-                                        address: contact.address,
-                                        city: contact.city,
-                                        state: contact.state,
-                                        country: contact.country,
-                                        zip: contact.zip,
-                                        dob: contact.dob,
-                                        notes: contact.notes
-                                    });
-
-                                    if (customerId) {
-                                        // 2. Create Deal (Lead)
-                                        const dealId = await crmService.createDeal({
-                                            title: `Lead: ${contact.name}`,
-                                            value: 0,
-                                            customerId: customerId,
-                                            customerName: contact.name,
-                                            customerEmail: contact.email,
-                                            customerPhone: contact.phone,
-                                            status: 'lead',
-                                            priority: 'medium',
-                                            paymentStatus: 'pending',
-                                            paymentTerms: 'full',
-                                            amountPaid: 0,
-                                            description: `Importado via CSV. Notas: ${contact.notes || ''}`
-                                        });
-                                        console.log(`Deal created: ${dealId}`);
-                                        successCount++;
-                                    } else {
-                                        console.error(`Failed to create/sync customer for ${contact.name}`);
-                                    }
-                                } catch (rowError) {
-                                    console.error(`Row error for ${contact.name}:`, rowError);
-                                }
-                            }
-
-                            if (successCount > 0) {
-                                addLog(`✅ Importação finalizada! ${successCount} leads criados.`);
-                                alert(`Sucesso! ${successCount} leads importados para o Kanban.`);
-                                setPreviewData([]);
-                            } else {
-                                addLog(`❌ Falha: Nenhum lead foi criado. Verifique o console.`);
-                                alert("Ops, parece que nenhum lead foi salvo. Verifique o console ou sua conexão.");
-                            }
-
-                        } catch (error) {
-                            console.error("Critical Import error:", error);
-                            addLog("❌ Erro crítico na importação.");
-                        } finally {
-                            setLoading(null);
-                        }
-                    };
-
-                // ... inside renderModalContent case 'email':
-                case 'email':
-                    return (
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Assunto</label>
-                                <input
-                                    value={emailSubject}
-                                    onChange={e => setEmailSubject(e.target.value)}
-                                    className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
-                                    placeholder="Oferta Especial..."
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Escolha um Modelo</label>
-                                <EmailSelector
-                                    selectedId={selectedTemplate?.id}
-                                    onSelect={(template) => {
-                                        setSelectedTemplate(template);
-                                        if (template.type === 'text') {
-                                            setEmailBody(template.preview); // Or default text
-                                        } else {
-                                            setEmailBody(template.html);
-                                        }
-                                    }}
-                                />
-                            </div>
-
-                            {selectedTemplate && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Personalizar Conteúdo ({selectedTemplate.type === 'html' ? 'HTML' : 'Texto'})</label>
-                                    <textarea
-                                        value={emailBody}
-                                        onChange={e => setEmailBody(e.target.value)}
-                                        className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 font-mono text-xs"
-                                        placeholder="Conteúdo do email..."
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    );
                 case 'sms':
-                    return (
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem (max 160 chars)</label>
-                                <textarea
-                                    value={smsMessage}
-                                    onChange={e => setSmsMessage(e.target.value)}
-                                    className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
-                                    placeholder="Sua oferta aqui..."
-                                    maxLength={160}
-                                />
-                                <p className="text-xs text-right text-gray-400">{smsMessage.length}/160</p>
-                            </div>
-                        </div>
+                    // Advanced SMS Payload
+                    await mcpService.sendSMSCampaign(
+                        "Campanha SMS Manual",
+                        smsMessage || "Oferta imperdível!",
+                        previewData
                     );
-                default:
-                    return (
-                        <div className="text-center py-6 text-gray-600">
-                            <p>Confirmar execução da automação <strong>{activeModal?.toUpperCase()}</strong>?</p>
-                            {activeModal === 'whatsapp' && <p className="text-sm mt-2 text-gray-400">Será enviado para {previewData.length} contatos.</p>}
-                        </div>
-                    );
+                    addLog('✅ SMS: Lote de mensagens enviado ao gateway.');
+                    break;
+
+                case 'scraper':
+                    await mcpService.runScraper(scraperForm.url, scraperForm.description);
+                    addLog('✅ Scraper: Agente IA iniciado na URL alvo.');
+                    break;
+
+                case 'social':
+                    await mcpService.generateVideo(socialForm.topic, socialForm.tech);
+                    addLog(`✅ Vídeo: Solicitação enviada para engine ${socialForm.tech}.`);
+                    break;
+
+                case 'ads':
+                    // Assuming similar structure or generic call
+                    await mcpService.call(MCP_ENDPOINTS.NANO_ADS, { prompt: "Gerar ads" });
+                    addLog('✅ Nano Ads: Geração de criativos iniciada.');
+                    break;
             }
-        };
+            alert(`✅ Ação ${activeModal} enviada com sucesso!`);
+            setActiveModal(null);
+        } catch (error) {
+            console.error(error);
+            addLog(`❌ Erro ao executar ${activeModal}: Veja o console.`);
+            alert(`Erro ao iniciar ${activeModal}.`);
+        } finally {
+            setLoading(null);
+        }
+    };
 
-        return (
-            <div className="space-y-6">
-                <header className="flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                            <Brain className="w-8 h-8 text-purple-600" />
-                            Marketing Hub & MCP
-                        </h1>
-                        <p className="text-gray-500">Gestão centralizada de automações via n8n.</p>
-                    </div>
-                </header>
-
-                <div className="grid md:grid-cols-3 gap-6">
-                    {/* Left Column: Import */}
-                    <div className="md:col-span-1 space-y-6">
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                                <Upload className="w-5 h-5 text-blue-600" />
-                                1. Importar Base
-                            </h3>
-                            {/* Status Message for large imports */}
-                            {loading === 'importing' && (
-                                <div className="mb-4 p-3 bg-blue-50 text-blue-700 text-sm rounded-lg flex items-center gap-2 animate-pulse">
-                                    <Upload className="w-4 h-4" /> Processando contatos...
-                                </div>
-                            )}
-
-                            <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors">
-                                <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
-                                <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center">
-                                    <Upload className="w-10 h-10 text-gray-300 mb-2" />
-                                    <span className="text-blue-600 font-medium">Selecionar CSV</span>
-                                    <span className="text-gray-400 text-xs mt-1">Nome, Email, Telefone, etc...</span>
-                                </label>
-                            </div>
-
-                            {previewData.length > 0 && (
-                                <div className="mt-4">
-                                    <div className="text-xs text-center text-gray-500 mb-2">
-                                        {previewData.length} contatos prontos para importar.
-                                    </div>
-                                    <button
-                                        onClick={processImport}
-                                        disabled={loading === 'importing'}
-                                        className="w-full py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                    >
-                                        {loading === 'importing' ? 'Salvando...' : 'Confirmar Importação'}
-                                    </button>
-                                </div>
-                            )}
-
-                            <button
-                                onClick={downloadTemplate}
-                                className="w-full mt-2 py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 rounded-lg transition-colors flex items-center justify-center gap-2"
+    const renderModalContent = () => {
+        switch (activeModal) {
+            case 'social':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Tecnologia de Vídeo</label>
+                            <select
+                                value={socialForm.tech}
+                                onChange={e => setSocialForm({ ...socialForm, tech: e.target.value as any })}
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
                             >
-                                <Upload className="w-4 h-4 rotate-180" /> Baixar Modelo CSV
-                            </button>
+                                <option value="nano_banana">Nano Banana (Rápido)</option>
+                                <option value="veo3">Google VEO3 (Alta Qualidade)</option>
+                                <option value="sora">OpenAI Sora (Cinematográfico)</option>
+                            </select>
                         </div>
-
-                        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm h-[300px] overflow-y-auto">
-                            <h3 className="text-sm font-bold text-gray-700 mb-2">Logs do Sistema de Execução</h3>
-                            <div className="space-y-2">
-                                {logs.length === 0 && <p className="text-xs text-gray-400 italic">Nenhuma atividade recente.</p>}
-                                {logs.map((log, i) => (
-                                    <p key={i} className="text-xs text-mono text-gray-600 border-b border-gray-50 pb-1">{log}</p>
-                                ))}
-                            </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Prompt / Roteiro</label>
+                            <textarea
+                                value={socialForm.topic}
+                                onChange={e => setSocialForm({ ...socialForm, topic: e.target.value })}
+                                className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Descreva o vídeo..."
+                            />
                         </div>
                     </div>
-
-                    {/* Middle/Right: Actions & Preview */}
-                    <div className="md:col-span-2 space-y-6">
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                            <CampaignButton
-                                icon={<Send className="w-4 h-4" />}
-                                label="WhatsApp"
-                                desc="Disparo em massa"
-                                onClick={() => openModal('whatsapp')}
-                                loading={loading === 'whatsapp'}
+                );
+            case 'scraper':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">URL Alvo</label>
+                            <input
+                                type="url"
+                                value={scraperForm.url}
+                                onChange={e => setScraperForm({ ...scraperForm, url: e.target.value })}
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                                placeholder="https://..."
                             />
-                            <CampaignButton
-                                icon={<Mail className="w-4 h-4" />}
-                                label="Email Mkt"
-                                desc="Campanha HTML"
-                                onClick={() => openModal('email')}
-                                loading={loading === 'email'}
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Instruções de Extração</label>
+                            <textarea
+                                value={scraperForm.description}
+                                onChange={e => setScraperForm({ ...scraperForm, description: e.target.value })}
+                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Quais dados buscar? (Emails, Telefones...)"
                             />
-                            <CampaignButton
-                                icon={<MessageSquare className="w-4 h-4" />}
-                                label="SMS"
-                                desc="Avisos Rápidos"
-                                onClick={() => openModal('sms')}
-                                loading={loading === 'sms'}
-                            />
-                            <CampaignButton
-                                icon={<Globe className="w-4 h-4" />}
-                                label="Scraper"
-                                desc="Extrair Leads"
-                                onClick={() => openModal('scraper')}
-                                loading={loading === 'scraper'}
-                            />
-                            <CampaignButton
-                                icon={<Video className="w-4 h-4" />}
-                                label="Vídeo AI"
-                                desc="Sora / VEO3"
-                                onClick={() => openModal('social')}
-                                loading={loading === 'social'}
-                            />
-                            <CampaignButton
-                                icon={<BarChart className="w-4 h-4" />}
-                                label="Nano Ads"
-                                desc="Gestão Tráfego"
-                                onClick={() => openModal('ads')}
-                                loading={loading === 'ads'}
+                        </div>
+                    </div>
+                );
+            case 'email':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Assunto</label>
+                            <input
+                                value={emailSubject}
+                                onChange={e => setEmailSubject(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                                placeholder="Oferta Especial..."
                             />
                         </div>
 
-                        {previewData.length > 0 && (
-                            <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="text-lg font-bold text-gray-800">Preview ({previewData.length})</h3>
-                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Pronto</span>
-                                </div>
-                                <div className="overflow-x-auto max-h-[300px]">
-                                    <table className="w-full text-left border-collapse text-sm">
-                                        <thead className="sticky top-0 bg-white">
-                                            <tr className="border-b border-gray-100 text-gray-500">
-                                                <th className="py-2">Nome</th>
-                                                <th className="py-2">Telefone</th>
-                                                <th className="py-2">Email</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {previewData.map((row, idx) => (
-                                                <tr key={idx} className="border-b border-gray-50 text-gray-700 font-mono text-xs">
-                                                    <td className="py-2">{row.name}</td>
-                                                    <td className="py-2">{row.phone}</td>
-                                                    <td className="py-2">{row.email}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Escolha um Modelo</label>
+                            <EmailSelector
+                                selectedId={selectedTemplate?.id}
+                                onSelect={(template) => {
+                                    setSelectedTemplate(template);
+                                    if (template.type === 'text') {
+                                        setEmailBody(template.preview);
+                                    } else {
+                                        setEmailBody(template.html);
+                                    }
+                                }}
+                            />
+                        </div>
+
+                        {selectedTemplate && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Personalizar Conteúdo ({selectedTemplate.type === 'html' ? 'HTML' : 'Texto'})</label>
+                                <textarea
+                                    value={emailBody}
+                                    onChange={e => setEmailBody(e.target.value)}
+                                    className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 font-mono text-xs"
+                                    placeholder="Conteúdo do email..."
+                                />
                             </div>
                         )}
                     </div>
-                </div>
-
-                {/* Modals */}
-                {activeModal && (
-                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in backdrop-blur-sm">
-                        <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-bold text-gray-900 capitalize flex items-center gap-2">
-                                    <Zap className="w-5 h-5 text-yellow-500" />
-                                    {activeModal === 'social' ? 'Criar Comercial' : activeModal.toUpperCase()}
-                                </h2>
-                                <button onClick={() => setActiveModal(null)} className="text-gray-400 hover:text-gray-600">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-
-                            {renderModalContent()}
-
-                            <div className="mt-8 pt-4 border-t border-gray-100 flex gap-3">
-                                <button
-                                    onClick={() => setActiveModal(null)}
-                                    className="flex-1 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    onClick={submitAction}
-                                    disabled={!!loading}
-                                    className="flex-1 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-medium flex justify-center items-center gap-2"
-                                >
-                                    {loading ? 'Enviando ao MCP...' : 'Executar'}
-                                </button>
-                            </div>
+                );
+            case 'sms':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem (max 160 chars)</label>
+                            <textarea
+                                value={smsMessage}
+                                onChange={e => setSmsMessage(e.target.value)}
+                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Sua oferta aqui..."
+                                maxLength={160}
+                            />
+                            <p className="text-xs text-right text-gray-400">{smsMessage.length}/160</p>
                         </div>
                     </div>
-                )}
-            </div>
-        );
+                );
+            default:
+                return (
+                    <div className="text-center py-6 text-gray-600">
+                        <p>Confirmar execução da automação <strong>{activeModal?.toUpperCase()}</strong>?</p>
+                        {activeModal === 'whatsapp' && <p className="text-sm mt-2 text-gray-400">Será enviado para {previewData.length} contatos.</p>}
+                    </div>
+                );
+        }
     };
 
-    // Helper Component
-    const CampaignButton = ({ icon, label, desc, onClick, loading }: any) => (
-        <button
-            onClick={onClick}
-            disabled={loading}
-            className="text-left p-4 rounded-xl border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50 transition-all flex flex-col gap-2 group disabled:opacity-50"
-        >
-            <div className="flex justify-between w-full">
-                <div className={`p-2 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-purple-100 group-hover:text-purple-600 transition-colors`}>
-                    {loading ? <div className="animate-spin h-4 w-4 border-2 border-purple-600 border-t-transparent rounded-full" /> : icon}
+    return (
+        <div className="space-y-6">
+            <header className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <Brain className="w-8 h-8 text-purple-600" />
+                        Marketing Hub & MCP
+                    </h1>
+                    <p className="text-gray-500">Gestão centralizada de automações via n8n.</p>
+                </div>
+            </header>
+
+            <div className="grid md:grid-cols-3 gap-6">
+                {/* Left Column: Import */}
+                <div className="md:col-span-1 space-y-6">
+                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <Upload className="w-5 h-5 text-blue-600" />
+                            1. Importar Base
+                        </h3>
+                        {/* Status Message for large imports */}
+                        {loading === 'importing' && (
+                            <div className="mb-4 p-3 bg-blue-50 text-blue-700 text-sm rounded-lg flex items-center gap-2 animate-pulse">
+                                <Upload className="w-4 h-4" /> Processando contatos...
+                            </div>
+                        )}
+
+                        <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors">
+                            <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
+                            <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center">
+                                <Upload className="w-10 h-10 text-gray-300 mb-2" />
+                                <span className="text-blue-600 font-medium">Selecionar CSV</span>
+                                <span className="text-gray-400 text-xs mt-1">Nome, Email, Telefone, etc...</span>
+                            </label>
+                        </div>
+
+                        {previewData.length > 0 && (
+                            <div className="mt-4">
+                                <div className="text-xs text-center text-gray-500 mb-2">
+                                    {previewData.length} contatos prontos para importar.
+                                </div>
+                                <button
+                                    onClick={processImport}
+                                    disabled={loading === 'importing'}
+                                    className="w-full py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {loading === 'importing' ? 'Salvando...' : 'Confirmar Importação'}
+                                </button>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={downloadTemplate}
+                            className="w-full mt-2 py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 rounded-lg transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Upload className="w-4 h-4 rotate-180" /> Baixar Modelo CSV
+                        </button>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm h-[300px] overflow-y-auto">
+                        <h3 className="text-sm font-bold text-gray-700 mb-2">Logs do Sistema de Execução</h3>
+                        <div className="space-y-2">
+                            {logs.length === 0 && <p className="text-xs text-gray-400 italic">Nenhuma atividade recente.</p>}
+                            {logs.map((log, i) => (
+                                <p key={i} className="text-xs text-mono text-gray-600 border-b border-gray-50 pb-1">{log}</p>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Middle/Right: Actions & Preview */}
+                <div className="md:col-span-2 space-y-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        <CampaignButton
+                            icon={<Send className="w-4 h-4" />}
+                            label="WhatsApp"
+                            desc="Disparo em massa"
+                            onClick={() => openModal('whatsapp')}
+                            loading={loading === 'whatsapp'}
+                        />
+                        <CampaignButton
+                            icon={<Mail className="w-4 h-4" />}
+                            label="Email Mkt"
+                            desc="Campanha HTML"
+                            onClick={() => openModal('email')}
+                            loading={loading === 'email'}
+                        />
+                        <CampaignButton
+                            icon={<MessageSquare className="w-4 h-4" />}
+                            label="SMS"
+                            desc="Avisos Rápidos"
+                            onClick={() => openModal('sms')}
+                            loading={loading === 'sms'}
+                        />
+                        <CampaignButton
+                            icon={<Globe className="w-4 h-4" />}
+                            label="Scraper"
+                            desc="Extrair Leads"
+                            onClick={() => openModal('scraper')}
+                            loading={loading === 'scraper'}
+                        />
+                        <CampaignButton
+                            icon={<Video className="w-4 h-4" />}
+                            label="Vídeo AI"
+                            desc="Sora / VEO3"
+                            onClick={() => openModal('social')}
+                            loading={loading === 'social'}
+                        />
+                        <CampaignButton
+                            icon={<BarChart className="w-4 h-4" />}
+                            label="Nano Ads"
+                            desc="Gestão Tráfego"
+                            onClick={() => openModal('ads')}
+                            loading={loading === 'ads'}
+                        />
+                    </div>
+
+                    {previewData.length > 0 && (
+                        <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-bold text-gray-800">Preview ({previewData.length})</h3>
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Pronto</span>
+                            </div>
+                            <div className="overflow-x-auto max-h-[300px]">
+                                <table className="w-full text-left border-collapse text-sm">
+                                    <thead className="sticky top-0 bg-white">
+                                        <tr className="border-b border-gray-100 text-gray-500">
+                                            <th className="py-2">Nome</th>
+                                            <th className="py-2">Telefone</th>
+                                            <th className="py-2">Email</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {previewData.map((row, idx) => (
+                                            <tr key={idx} className="border-b border-gray-50 text-gray-700 font-mono text-xs">
+                                                <td className="py-2">{row.name}</td>
+                                                <td className="py-2">{row.phone}</td>
+                                                <td className="py-2">{row.email}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
-            <div>
-                <h4 className="font-bold text-gray-800 text-sm">{label}</h4>
-                <p className="text-xs text-gray-500">{desc}</p>
-            </div>
-        </button>
+
+            {/* Modals */}
+            {activeModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900 capitalize flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-yellow-500" />
+                                {activeModal === 'social' ? 'Criar Comercial' : activeModal.toUpperCase()}
+                            </h2>
+                            <button onClick={() => setActiveModal(null)} className="text-gray-400 hover:text-gray-600">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        {renderModalContent()}
+
+                        <div className="mt-8 pt-4 border-t border-gray-100 flex gap-3">
+                            <button
+                                onClick={() => setActiveModal(null)}
+                                className="flex-1 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={submitAction}
+                                disabled={!!loading}
+                                className="flex-1 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-medium flex justify-center items-center gap-2"
+                            >
+                                {loading ? 'Enviando ao MCP...' : 'Executar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
+};
+
+// Helper Component
+const CampaignButton = ({ icon, label, desc, onClick, loading }: any) => (
+    <button
+        onClick={onClick}
+        disabled={loading}
+        className="text-left p-4 rounded-xl border border-gray-200 hover:border-purple-300 hover:bg-purple-50/50 transition-all flex flex-col gap-2 group disabled:opacity-50"
+    >
+        <div className="flex justify-between w-full">
+            <div className={`p-2 rounded-lg bg-gray-100 text-gray-500 group-hover:bg-purple-100 group-hover:text-purple-600 transition-colors`}>
+                {loading ? <div className="animate-spin h-4 w-4 border-2 border-purple-600 border-t-transparent rounded-full" /> : icon}
+            </div>
+        </div>
+        <div>
+            <h4 className="font-bold text-gray-800 text-sm">{label}</h4>
+            <p className="text-xs text-gray-500">{desc}</p>
+        </div>
+    </button>
+);

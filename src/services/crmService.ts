@@ -123,17 +123,18 @@ export const crmService = {
         // Logic to check duplicates would go here (by email/phone)
         // For now, simple add
         // In a real app, we'd query first.
-        console.log("Saving customer:", customerData); // Debug log
-        const docRef = await addDoc(collection(db, CUSTOMERS_COLLECTION), {
-            ...customerData,
-            createdAt: Date.now()
-        });
-        console.log("Customer saved with ID:", docRef.id);
-        return docRef.id;
-    } catch(error) {
-        console.error("Error syncing customer:", error);
-        // Consider throwing or returning specific error
-        return null;
+        try {
+            console.log("Saving customer:", customerData); // Debug log
+            const docRef = await addDoc(collection(db, CUSTOMERS_COLLECTION), {
+                ...customerData,
+                createdAt: Date.now()
+            });
+            console.log("Customer saved with ID:", docRef.id);
+            return docRef.id;
+        } catch (error) {
+            console.error("Error syncing customer:", error);
+            return null;
+        }
     }
 }
 };
