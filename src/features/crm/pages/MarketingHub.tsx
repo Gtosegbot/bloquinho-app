@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap, X, Brain } from 'lucide-react';
 import { mcpService, MCP_ENDPOINTS } from '../../../services/mcpService';
+import { EmailSelector } from '../components/EmailSelector';
 
 type CampaignType = 'whatsapp' | 'email' | 'sms' | 'scraper' | 'social' | 'ads';
 
@@ -25,8 +26,9 @@ export const MarketingHub = () => {
     const [scraperForm, setScraperForm] = useState<ScraperForm>({ url: '', description: '' });
     const [socialForm, setSocialForm] = useState<SocialForm>({ topic: '', tech: 'nano_banana' });
     const [emailSubject, setEmailSubject] = useState('');
-    const [emailBody, setEmailBody] = useState(''); // New for manual email
-    const [smsMessage, setSmsMessage] = useState(''); // New for manual SMS
+    const [emailBody, setEmailBody] = useState('');
+    const [smsMessage, setSmsMessage] = useState('');
+    const [selectedTemplate, setSelectedTemplate] = useState<any>(null); // Added this
 
     const addLog = (msg: string) => {
         setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
