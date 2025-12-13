@@ -460,6 +460,43 @@ export const MarketingHub = () => {
                         )}
                     </div>
                 );
+
+            case 'whatsapp':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem WhatsApp</label>
+                            <textarea
+                                value={whatsappMessage}
+                                onChange={e => setWhatsappMessage(e.target.value)}
+                                className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Digite sua mensagem para o WhatsApp... (Olá [Nome] será adicionado automaticamente)"
+                            />
+                            <p className="text-xs text-gray-500">
+                                Dica: A saudação inicial com o nome do cliente é adicionada automaticamente.
+                            </p>
+                        </div>
+                    </div>
+                );
+
+            case 'sms':
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem SMS</label>
+                            <textarea
+                                value={smsMessage}
+                                onChange={e => setSmsMessage(e.target.value)}
+                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Digite sua mensagem curta..."
+                                maxLength={160}
+                            />
+                            <div className="text-right text-xs text-gray-500">
+                                {smsMessage.length}/160 caracteres
+                            </div>
+                        </div>
+                    </div>
+                );
             case 'sms':
                 return (
                     <div className="space-y-4">
