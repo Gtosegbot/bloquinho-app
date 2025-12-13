@@ -64,8 +64,8 @@ export const mcpService = {
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'x-client-id': 'bloquinho-app-v1'
+                    'Content-Type': 'application/json'
+                    // Removed custom header to reduce CORS preflight issues
                 },
                 body: JSON.stringify(payload)
             });
