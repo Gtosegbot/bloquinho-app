@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Mail, Check, AlignLeft, LayoutTemplate } from 'lucide-react';
+import { Check, AlignLeft, LayoutTemplate } from 'lucide-react';
 
 interface EmailTemplate {
     id: string;
