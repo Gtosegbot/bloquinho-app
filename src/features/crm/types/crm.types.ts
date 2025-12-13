@@ -22,6 +22,18 @@ export interface Deal {
   description?: string;
   customerPhone?: string;
   customerEmail?: string;
+  // Financial Control
+  paymentStatus: 'pending' | 'partial' | 'paid' | 'overdue';
+  paymentTerms: 'full' | '50_50' | 'negotiated';
+  amountPaid: number;
+  nextPaymentDate?: string;
+  // Audit Log for Dual LLM context
+  history?: {
+    date: string;
+    action: string;
+    actor: 'system' | 'user' | 'external_bot' | 'internal_coach';
+    details?: string;
+  }[];
 }
 
 export interface KanbanColumn {

@@ -108,6 +108,16 @@ export const KanbanBoard = () => {
                                                                 <User className="w-3 h-3" />
                                                                 {deal.customerName}
                                                             </div>
+                                                            {deal.paymentStatus && deal.paymentStatus !== 'pending' && (
+                                                                <div className="mb-2">
+                                                                    <span className={`text-[10px] px-2 py-0.5 rounded font-mono
+                                                                        ${deal.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' :
+                                                                            deal.paymentStatus === 'partial' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600'}`}>
+                                                                        {deal.paymentStatus === 'paid' ? 'Pago' :
+                                                                            deal.paymentStatus === 'partial' ? `Restam ${((deal.value - (deal.amountPaid || 0))).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}` : ''}
+                                                                    </span>
+                                                                </div>
+                                                            )}
                                                             <div className="flex justify-between items-center pt-2 border-t border-gray-50">
                                                                 <div className="text-sm font-bold text-gray-900">
                                                                     {deal.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -152,7 +162,7 @@ export const KanbanBoard = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Valor (R$)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label>
                                     <input
                                         type="number"
                                         value={selectedDeal.value}
@@ -171,6 +181,56 @@ export const KanbanBoard = () => {
                                         <option value="medium">Média</option>
                                         <option value="high">Alta</option>
                                     </select>
+                                </div>
+                            </div>
+
+                            {/* Financial Control Section */}
+                            <div className="p-4 bg-green-50 rounded-lg space-y-3 border border-green-100">
+                                <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                    💰 Controle Financeiro
+                                </h3>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Termos</label>
+                                        <select
+                                            value={selectedDeal.paymentTerms || 'full'}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, paymentTerms: e.target.value as any })}
+                                            className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                        >
+                                            <option value="full">À Vista (100%)</option>
+                                            <option value="50_50">50% / 50%</option>
+                                            <option value="negotiated">Negociado</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Status Pagamento</label>
+                                        <select
+                                            value={selectedDeal.paymentStatus || 'pending'}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, paymentStatus: e.target.value as any })}
+                                            className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                        >
+                                            <option value="pending">Pendente</option>
+                                            <option value="partial">Parcial</option>
+                                            <option value="paid">Pago</option>
+                                            <option value="overdue">Atrasado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-500 mb-1">Valor Pago (R$)</label>
+                                    <div className="flex gap-2 items-center">
+                                        <input
+                                            type="number"
+                                            value={selectedDeal.amountPaid || 0}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, amountPaid: Number(e.target.value) })}
+                                            className="flex-1 p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                        />
+                                        <div className="text-xs text-gray-500">
+                                            Restante: <span className="font-bold text-red-500">
+                                                {((selectedDeal.value || 0) - (selectedDeal.amountPaid || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
