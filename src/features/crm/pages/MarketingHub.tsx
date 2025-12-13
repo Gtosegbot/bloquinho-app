@@ -498,27 +498,11 @@ export const MarketingHub = () => {
                         </div>
                     </div>
                 );
-            case 'sms':
-                return (
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem (max 160 chars)</label>
-                            <textarea
-                                value={smsMessage}
-                                onChange={e => setSmsMessage(e.target.value)}
-                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
-                                placeholder="Sua oferta aqui..."
-                                maxLength={160}
-                            />
-                            <p className="text-xs text-right text-gray-400">{smsMessage.length}/160</p>
-                        </div>
-                    </div>
-                );
             default:
                 return (
                     <div className="text-center py-6 text-gray-600">
                         <p>Confirmar execução da automação <strong>{activeModal?.toUpperCase()}</strong>?</p>
-                        {activeModal === 'whatsapp' && <p className="text-sm mt-2 text-gray-400">Será enviado para {previewData.length} contatos.</p>}
+                        {/* Removed redundant whatsapp check */}
                     </div>
                 );
         }
