@@ -89,6 +89,7 @@ export const MarketingHub = () => {
     const [emailSubject, setEmailSubject] = useState('');
     const [emailBody, setEmailBody] = useState('');
     const [smsMessage, setSmsMessage] = useState('');
+    const [whatsappMessage, setWhatsappMessage] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null); // Added this
 
     const addLog = (msg: string) => {
