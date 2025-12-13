@@ -7,7 +7,8 @@ import { EmailSelector } from '../components/EmailSelector';
 import { Customer } from '../../crm/types/crm.types';
 
 type CampaignType = 'whatsapp' | 'email' | 'sms' | 'scraper' | 'social' | 'ads';
-type ViewMode = 'import' | 'database';
+// type ViewMode removed
+
 
 interface ScraperForm {
     url: string;
@@ -624,8 +625,7 @@ export const MarketingHub = () => {
             default:
                 return (
                     <div className="text-center py-6 text-gray-600">
-                        <p>Confirmar execução da automação <strong>{activeModal ? activeModal.toUpperCase() : ''}</strong>?</p>
-                        {/* Removed redundant whatsapp check */}
+                        <p>Selecione uma automação.</p>
                     </div>
                 );
         }
