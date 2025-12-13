@@ -1,3 +1,4 @@
+```typescript
 import {
     collection,
     addDoc,
@@ -5,8 +6,6 @@ import {
     doc,
     getDocs,
     query,
-    where,
-    Timestamp,
     getDoc
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -101,39 +100,39 @@ export const crmService = {
                 date: new Date().toISOString(),
                 action: 'Payment Received',
                 actor,
-                details: `Received R$${amount}. Total Paid: R$${newAmountPaid}/${totalValue}`
+                details: `Received R$${ amount }. Total Paid: R$${ newAmountPaid }/${totalValue}`
             };
 
-            await updateDoc(dealRef, {
-                amountPaid: newAmountPaid,
-                paymentStatus: newPaymentStatus,
-                updatedAt: Date.now(),
-                history: [...(dealData.history || []), historyEntry]
-            });
+await updateDoc(dealRef, {
+    amountPaid: newAmountPaid,
+    paymentStatus: newPaymentStatus,
+    updatedAt: Date.now(),
+    history: [...(dealData.history || []), historyEntry]
+});
 
-            return { newAmountPaid, newPaymentStatus };
+return { newAmountPaid, newPaymentStatus };
         } catch (error) {
-            console.error("Error registering payment:", error);
-            throw error;
-        }
+    console.error("Error registering payment:", error);
+    throw error;
+}
     },
 
     /**
      * Creates a customer from CSV row if it doesn't exist
      */
     async syncCustomer(customerData: Partial<Customer>) {
-        // Logic to check duplicates would go here (by email/phone)
-        // For now, simple add
-        // In a real app, we'd query first.
-        try {
-            const docRef = await addDoc(collection(db, CUSTOMERS_COLLECTION), {
-                ...customerData,
-                createdAt: Date.now()
-            });
-            return docRef.id;
-        } catch (error) {
-            console.error("Error syncing customer:", error);
-            return null;
-        }
+    // Logic to check duplicates would go here (by email/phone)
+    // For now, simple add
+    // In a real app, we'd query first.
+    try {
+        const docRef = await addDoc(collection(db, CUSTOMERS_COLLECTION), {
+            ...customerData,
+            createdAt: Date.now()
+        });
+        return docRef.id;
+    } catch (error) {
+        console.error("Error syncing customer:", error);
+        return null;
     }
+}
 };

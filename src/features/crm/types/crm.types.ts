@@ -27,6 +27,7 @@ export interface Deal {
   paymentTerms: 'full' | '50_50' | 'negotiated';
   amountPaid: number;
   nextPaymentDate?: string;
+  paymentNotes?: string; // For custom terms like "40/60" or "Pay on Pickup"
   // Audit Log for Dual LLM context
   history?: {
     date: string;
