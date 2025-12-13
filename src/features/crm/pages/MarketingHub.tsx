@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap, X, Brain } from 'lucide-react';
-import { mcpService } from '../../../services/mcpService';
+import { mcpService, MCP_ENDPOINTS } from '../../../services/mcpService';
 
 type CampaignType = 'whatsapp' | 'email' | 'sms' | 'scraper' | 'social' | 'ads';
 
@@ -112,7 +112,7 @@ export const MarketingHub = () => {
 
                 case 'ads':
                     // Assuming similar structure or generic call
-                    await mcpService.call(mcpService.MCP_ENDPOINTS.NANO_ADS, { prompt: "Gerar ads" });
+                    await mcpService.call(MCP_ENDPOINTS.NANO_ADS, { prompt: "Gerar ads" });
                     addLog('✅ Nano Ads: Geração de criativos iniciada.');
                     break;
             }
