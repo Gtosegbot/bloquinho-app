@@ -160,162 +160,160 @@ export const KanbanBoard = () => {
                             );
                         })}
                     </div>
-                </div>
                 </DragDropContext>
-    )
-}
+            )}
 
-{/* Edit Modal */ }
-{
-    selectedDeal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-fade-in">
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Editar Negócio</h2>
-                    <button onClick={() => setSelectedDeal(null)} className="text-gray-400 hover:text-gray-600">✕</button>
-                </div>
-
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Título do Projeto</label>
-                        <input
-                            type="text"
-                            value={selectedDeal.title}
-                            onChange={e => setSelectedDeal({ ...selectedDeal, title: e.target.value })}
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label>
-                            <input
-                                type="number"
-                                value={selectedDeal.value}
-                                onChange={e => setSelectedDeal({ ...selectedDeal, value: Number(e.target.value) })}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Prioridade</label>
-                            <select
-                                value={selectedDeal.priority}
-                                onChange={e => setSelectedDeal({ ...selectedDeal, priority: e.target.value as any })}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            >
-                                <option value="low">Baixa</option>
-                                <option value="medium">Média</option>
-                                <option value="high">Alta</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Financial Control Section */}
-                    <div className="p-4 bg-green-50 rounded-lg space-y-3 border border-green-100">
-                        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                            💰 Controle Financeiro
-                        </h3>
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Termos</label>
-                                <select
-                                    value={selectedDeal.paymentTerms || 'full'}
-                                    onChange={e => setSelectedDeal({ ...selectedDeal, paymentTerms: e.target.value as any })}
-                                    className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
-                                >
-                                    <option value="full">À Vista (100%)</option>
-                                    <option value="50_50">50% / 50%</option>
-                                    <option value="negotiated">Negociado</option>
-                                </select>
+            {/* Edit Modal */}
+            {
+                selectedDeal && (
+                    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl animate-fade-in">
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-xl font-bold text-gray-900">Editar Negócio</h2>
+                                <button onClick={() => setSelectedDeal(null)} className="text-gray-400 hover:text-gray-600">✕</button>
                             </div>
-                            <div>
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Status Pagamento</label>
-                                <select
-                                    value={selectedDeal.paymentStatus || 'pending'}
-                                    onChange={e => setSelectedDeal({ ...selectedDeal, paymentStatus: e.target.value as any })}
-                                    className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
-                                >
-                                    <option value="pending">Pendente</option>
-                                    <option value="partial">Parcial</option>
-                                    <option value="paid">Pago</option>
-                                    <option value="overdue">Atrasado</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-medium text-gray-500 mb-1">Valor Pago (R$)</label>
-                            <div className="flex gap-2 items-center">
-                                <input
-                                    type="number"
-                                    value={selectedDeal.amountPaid || 0}
-                                    onChange={e => setSelectedDeal({ ...selectedDeal, amountPaid: Number(e.target.value) })}
-                                    className="flex-1 p-2 text-sm border border-gray-200 rounded lg outline-none"
-                                />
-                                <div className="text-xs text-gray-500">
-                                    Restante: <span className="font-bold text-red-500">
-                                        {((selectedDeal.value || 0) - (selectedDeal.amountPaid || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                                    </span>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Título do Projeto</label>
+                                    <input
+                                        type="text"
+                                        value={selectedDeal.title}
+                                        onChange={e => setSelectedDeal({ ...selectedDeal, title: e.target.value })}
+                                        className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Valor Total (R$)</label>
+                                        <input
+                                            type="number"
+                                            value={selectedDeal.value}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, value: Number(e.target.value) })}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Prioridade</label>
+                                        <select
+                                            value={selectedDeal.priority}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, priority: e.target.value as any })}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        >
+                                            <option value="low">Baixa</option>
+                                            <option value="medium">Média</option>
+                                            <option value="high">Alta</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Financial Control Section */}
+                                <div className="p-4 bg-green-50 rounded-lg space-y-3 border border-green-100">
+                                    <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                        💰 Controle Financeiro
+                                    </h3>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">Termos</label>
+                                            <select
+                                                value={selectedDeal.paymentTerms || 'full'}
+                                                onChange={e => setSelectedDeal({ ...selectedDeal, paymentTerms: e.target.value as any })}
+                                                className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                            >
+                                                <option value="full">À Vista (100%)</option>
+                                                <option value="50_50">50% / 50%</option>
+                                                <option value="negotiated">Negociado</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">Status Pagamento</label>
+                                            <select
+                                                value={selectedDeal.paymentStatus || 'pending'}
+                                                onChange={e => setSelectedDeal({ ...selectedDeal, paymentStatus: e.target.value as any })}
+                                                className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                            >
+                                                <option value="pending">Pendente</option>
+                                                <option value="partial">Parcial</option>
+                                                <option value="paid">Pago</option>
+                                                <option value="overdue">Atrasado</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-500 mb-1">Valor Pago (R$)</label>
+                                        <div className="flex gap-2 items-center">
+                                            <input
+                                                type="number"
+                                                value={selectedDeal.amountPaid || 0}
+                                                onChange={e => setSelectedDeal({ ...selectedDeal, amountPaid: Number(e.target.value) })}
+                                                className="flex-1 p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                            />
+                                            <div className="text-xs text-gray-500">
+                                                Restante: <span className="font-bold text-red-500">
+                                                    {((selectedDeal.value || 0) - (selectedDeal.amountPaid || 0)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="mt-2">
+                                            <label className="block text-xs font-medium text-gray-500 mb-1">Observações Financeiras (Ex: "Pagar na retirada", "40/60")</label>
+                                            <input
+                                                type="text"
+                                                value={selectedDeal.paymentNotes || ''}
+                                                onChange={e => setSelectedDeal({ ...selectedDeal, paymentNotes: e.target.value })}
+                                                className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none placeholder-gray-400"
+                                                placeholder="Detalhes da negociação..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+                                        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
+                                            <User className="w-4 h-4" /> Dados do Cliente
+                                        </h3>
+                                        <input
+                                            placeholder="Nome do Cliente"
+                                            value={selectedDeal.customerName}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, customerName: e.target.value })}
+                                            className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                        />
+                                        <div className="grid grid-cols-2 gap-2">
+                                            <input
+                                                placeholder="Telefone / WhatsApp"
+                                                value={selectedDeal.customerPhone || ''}
+                                                onChange={e => setSelectedDeal({ ...selectedDeal, customerPhone: e.target.value })}
+                                                className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                            />
+                                            <input
+                                                placeholder="Email"
+                                                value={selectedDeal.customerEmail || ''}
+                                                onChange={e => setSelectedDeal({ ...selectedDeal, customerEmail: e.target.value })}
+                                                className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Detalhes / Notas</label>
+                                        <textarea
+                                            rows={3}
+                                            value={selectedDeal.description || ''}
+                                            onChange={e => setSelectedDeal({ ...selectedDeal, description: e.target.value })}
+                                            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                            placeholder="Descreva o pedido..."
+                                        />
+                                    </div>
+
+                                    <div className="flex gap-3 pt-4">
+                                        <button onClick={() => setSelectedDeal(null)} className="flex-1 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
+                                        <button onClick={() => handleSaveDeal(selectedDeal)} className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">Salvar Alterações</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="mt-2">
-                                <label className="block text-xs font-medium text-gray-500 mb-1">Observações Financeiras (Ex: "Pagar na retirada", "40/60")</label>
-                                <input
-                                    type="text"
-                                    value={selectedDeal.paymentNotes || ''}
-                                    onChange={e => setSelectedDeal({ ...selectedDeal, paymentNotes: e.target.value })}
-                                    className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none placeholder-gray-400"
-                                    placeholder="Detalhes da negociação..."
-                                />
-                            </div>
-                        </div>
-
-                        <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-                            <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                                <User className="w-4 h-4" /> Dados do Cliente
-                            </h3>
-                            <input
-                                placeholder="Nome do Cliente"
-                                value={selectedDeal.customerName}
-                                onChange={e => setSelectedDeal({ ...selectedDeal, customerName: e.target.value })}
-                                className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
-                            />
-                            <div className="grid grid-cols-2 gap-2">
-                                <input
-                                    placeholder="Telefone / WhatsApp"
-                                    value={selectedDeal.customerPhone || ''}
-                                    onChange={e => setSelectedDeal({ ...selectedDeal, customerPhone: e.target.value })}
-                                    className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
-                                />
-                                <input
-                                    placeholder="Email"
-                                    value={selectedDeal.customerEmail || ''}
-                                    onChange={e => setSelectedDeal({ ...selectedDeal, customerEmail: e.target.value })}
-                                    className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
-                                />
-                            </div>
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Detalhes / Notas</label>
-                            <textarea
-                                rows={3}
-                                value={selectedDeal.description || ''}
-                                onChange={e => setSelectedDeal({ ...selectedDeal, description: e.target.value })}
-                                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none"
-                                placeholder="Descreva o pedido..."
-                            />
-                        </div>
-
-                        <div className="flex gap-3 pt-4">
-                            <button onClick={() => setSelectedDeal(null)} className="flex-1 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">Cancelar</button>
-                            <button onClick={() => handleSaveDeal(selectedDeal)} className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">Salvar Alterações</button>
                         </div>
                     </div>
-                </div>
-            </div>
+                )
+            }
         </div>
-    )
-}
-        </div >
     );
 };
