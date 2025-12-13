@@ -247,17 +247,8 @@ export const KanbanBoard = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-                        <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-                            <User className="w-4 h-4" /> Dados do Cliente
-                        </h3>
-                        <input
-                            placeholder="Nome do Cliente"
-                            value={selectedDeal.customerName}
-                            onChange={e => setSelectedDeal({ ...selectedDeal, customerName: e.target.value })}
-                            className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
+                        onChange={e => setSelectedDeal({ ...selectedDeal, customerName: e.target.value })}
+                        className="w-full p-2 text-sm border border-gray-200 rounded lg outline-none"
                         />
                         <div className="grid grid-cols-2 gap-2">
                             <input
