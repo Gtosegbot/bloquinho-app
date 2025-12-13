@@ -135,5 +135,39 @@ export const crmService = {
             console.error("Error syncing customer:", error);
             return null;
         }
+    },
+
+    /**
+     * Fetches all customers
+     */
+    async getCustomers(): Promise<Customer[]> {
+        try {
+            const q = query(collection(db, CUSTOMERS_COLLECTION));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            } as Customer));
+        } catch (error) {
+            console.error("Error fetching customers:", error);
+            return [];
+        }
+    },
+
+    /**
+     * Updates customer tags
+     */
+    async updateCustomerTags(customerId: string, tags: string[]) {
+        try {
+            const customerRef = doc(db, CUSTOMERS_COLLECTION, customerId);
+            await updateDoc(customerRef, {
+                tags,
+                updatedAt: Date.now()
+            });
+            return true;
+        } catch (error) {
+            console.error("Error updating tags:", error);
+            return false;
+        }
     }
 }

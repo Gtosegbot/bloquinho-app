@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap, X, Brain, Users, Tag, CheckSquare, Square, Filter } from 'lucide-react';
+import { Send, Upload, Mail, MessageSquare, Globe, BarChart, Video, Zap, X, Brain, Users, Tag, CheckSquare, Square } from 'lucide-react';
 import { mcpService, MCP_ENDPOINTS } from '../../../services/mcpService';
 import { crmService } from '../../../services/crmService';
 import { EmailSelector } from '../components/EmailSelector';

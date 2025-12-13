@@ -14,6 +14,7 @@ export interface Customer {
   zip?: string;
   dob?: string;
   notes?: string;
+  tags?: string[];
 }
 
 export interface Deal {
