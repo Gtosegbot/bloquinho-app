@@ -14,86 +14,59 @@ interface ScraperForm {
     description: string;
 }
 
-interface SocialForm {
-    topic: string;
+interface ImageWizardState {
+    product: string;
+    context: string;
+    style: 'realistic' | '3d' | 'cartoon' | 'minimalist';
+    format: 'square' | 'portrait' | 'landscape';
+}
+
+interface VideoWizardState {
+    script: string;
+    visualStyle: 'cinematic' | 'documentary' | 'animation' | 'ugc';
+    duration: 'short' | 'medium';
     tech: 'veo3' | 'sora' | 'nano_banana';
 }
 
 export const MarketingHub = () => {
-    // Data State
-    const [previewData, setPreviewData] = useState<any[]>([]);
-    const [dbClients, setDbClients] = useState<Customer[]>([]);
-    const [selectedIds, setSelectedIds] = useState<string[]>([]);
-    const [viewMode, setViewMode] = useState<ViewMode>('database'); // Default to database view if empty import
-
-    // UI State
-    const [loading, setLoading] = useState<string | null>(null);
-    const [activeModal, setActiveModal] = useState<CampaignType | null>(null);
-    const [logs, setLogs] = useState<string[]>([]);
-    const [showTagModal, setShowTagModal] = useState(false);
-    const [newTag, setNewTag] = useState('');
-
-    useEffect(() => {
-        loadClients();
-    }, []);
-
-    const loadClients = async () => {
-        const clients = await crmService.getCustomers();
-        setDbClients(clients);
-        // If we have clients, default to database view
-        if (clients.length > 0 && previewData.length === 0) {
-            setViewMode('database');
-        }
-    };
-
-    const toggleSelectAll = () => {
-        if (selectedIds.length === dbClients.length) {
-            setSelectedIds([]);
-        } else {
-            setSelectedIds(dbClients.map(c => c.id));
-        }
-    };
-
-    const toggleSelectOne = (id: string) => {
-        if (selectedIds.includes(id)) {
-            setSelectedIds(selectedIds.filter(sid => sid !== id));
-        } else {
-            setSelectedIds([...selectedIds, id]);
-        }
-    };
-
-    const handleAddTag = async () => {
-        if (!newTag || selectedIds.length === 0) return;
-        setLoading('tagging');
-        let count = 0;
-        for (const id of selectedIds) {
-            const client = dbClients.find(c => c.id === id);
-            if (client) {
-                const updatedTags = [...(client.tags || []), newTag];
-                // Remove duplicates
-                const uniqueTags = [...new Set(updatedTags)];
-                await crmService.updateCustomerTags(id, uniqueTags);
-                count++;
-            }
-        }
-        addLog(`✅ Tag "${newTag}" adicionada a ${count} clientes.`);
-        setNewTag('');
-        setShowTagModal(false);
-        setLoading(null);
-        loadClients(); // Refresh
-    };
+    const [viewMode, setViewMode] = useState<'import' | 'database'>('import');
 
     // Forms State
-    const [scraperForm, setScraperForm] = useState<ScraperForm>({ url: '', description: '' });
-    const [socialForm, setSocialForm] = useState<SocialForm>({ topic: '', tech: 'nano_banana' });
+    const [activeModal, setActiveModal] = useState<CampaignType | null>(null);
+    const [wizardStep, setWizardStep] = useState(1); // Wizard progress
+
+    // Legacy simple forms (keeping for compatibility if needed, but wizards replace them)
     const [emailSubject, setEmailSubject] = useState('');
     const [emailBody, setEmailBody] = useState('');
     const [smsMessage, setSmsMessage] = useState('');
     const [whatsappMessage, setWhatsappMessage] = useState('');
-    const [selectedTemplate, setSelectedTemplate] = useState<any>(null); // Added this
+    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
 
-    const addLog = (msg: string) => {
-        setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev]);
+    // Wizard States
+    const [imageWizard, setImageWizard] = useState<ImageWizardState>({
+        product: '',
+        context: '',
+        style: 'realistic',
+        format: 'square'
+    });
+
+    const [videoWizard, setVideoWizard] = useState<VideoWizardState>({
+        script: '',
+        visualStyle: 'cinematic',
+        duration: 'short',
+        tech: 'veo3'
+    });
+
+    // ... existing scraper state ...
+    const [scraperForm, setScraperForm] = useState<ScraperForm>({ url: '', description: '' });
+
+    // ... existing logging ...
+    const [logs, setLogs] = useState<string[]>([]);
+
+    const resetForms = () => {
+        setWizardStep(1);
+        setImageWizard({ product: '', context: '', style: 'realistic', format: 'square' });
+        setVideoWizard({ script: '', visualStyle: 'cinematic', duration: 'short', tech: 'veo3' });
     };
 
 
@@ -346,15 +319,25 @@ export const MarketingHub = () => {
                     addLog('✅ Scraper: Agente IA iniciado na URL alvo.');
                     break;
 
-                case 'social':
-                    await mcpService.generateVideo(socialForm.topic, socialForm.tech);
-                    addLog(`✅ Vídeo: Solicitação enviada para engine ${socialForm.tech}.`);
+                case 'social': // Video Wizard
+                    const videoPrompt = `
+[VIDEO SCRIPT]: ${videoWizard.script}
+[VISUAL STYLE]: ${videoWizard.visualStyle}
+[DURATION]: ${videoWizard.duration}
+                    `.trim();
+                    await mcpService.generateVideo(videoPrompt, videoWizard.tech);
+                    addLog(`✅ Vídeo (${videoWizard.tech}): Solicitação enviada.`);
                     break;
 
-                case 'ads':
-                    // Assuming similar structure or generic call
-                    await mcpService.call(MCP_ENDPOINTS.NANO_ADS, { prompt: "Gerar ads" });
-                    addLog('✅ Nano Ads: Geração de criativos iniciada.');
+                case 'ads': // Image Wizard (Nano Banana)
+                    const imagePrompt = `
+[PRODUCT]: ${imageWizard.product}
+[CONTEXT]: ${imageWizard.context}
+[STYLE]: ${imageWizard.style}
+[FORMAT]: ${imageWizard.format}
+                    `.trim();
+                    await mcpService.call(MCP_ENDPOINTS.NANO_ADS, { prompt: imagePrompt });
+                    addLog('✅ Nano Banana: Solicitação de imagem enviada.');
                     break;
             }
             alert(`✅ Ação ${activeModal} enviada com sucesso!`);
@@ -370,29 +353,110 @@ export const MarketingHub = () => {
 
     const renderModalContent = () => {
         switch (activeModal) {
-            case 'social':
+            case 'social': // Video Wizard
                 return (
                     <div className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Tecnologia de Vídeo</label>
-                            <select
-                                value={socialForm.tech}
-                                onChange={e => setSocialForm({ ...socialForm, tech: e.target.value as any })}
-                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
-                            >
-                                <option value="nano_banana">Nano Banana (Rápido)</option>
-                                <option value="veo3">Google VEO3 (Alta Qualidade)</option>
-                                <option value="sora">OpenAI Sora (Cinematográfico)</option>
-                            </select>
+                        <div className="bg-purple-50 p-3 rounded-lg border border-purple-100 mb-4">
+                            <h4 className="text-purple-800 font-bold text-sm flex items-center gap-2">
+                                <Video className="w-4 h-4" /> Criação de Vídeo Guiada
+                            </h4>
                         </div>
+
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Prompt / Roteiro</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">1. Qual o Roteiro ou Ideia Principal?</label>
                             <textarea
-                                value={socialForm.topic}
-                                onChange={e => setSocialForm({ ...socialForm, topic: e.target.value })}
-                                className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
-                                placeholder="Descreva o vídeo..."
+                                value={videoWizard.script}
+                                onChange={e => setVideoWizard({ ...videoWizard, script: e.target.value })}
+                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                                placeholder="Um vídeo mostrando..."
                             />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">2. Estilo Visual</label>
+                                <select
+                                    value={videoWizard.visualStyle}
+                                    onChange={e => setVideoWizard({ ...videoWizard, visualStyle: e.target.value as any })}
+                                    className="w-full p-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="cinematic">Cinematográfico</option>
+                                    <option value="documentary">Documentário</option>
+                                    <option value="animation">Animação 3D</option>
+                                    <option value="ugc">Estilo TikTok (UGC)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">3. Tecnologia</label>
+                                <select
+                                    value={videoWizard.tech}
+                                    onChange={e => setVideoWizard({ ...videoWizard, tech: e.target.value as any })}
+                                    className="w-full p-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="veo3">Google VEO3 (Recomendado)</option>
+                                    <option value="sora">OpenAI Sora</option>
+                                    <option value="nano_banana">Nano Banana Video</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+            case 'ads': // Image/Nano Banana Wizard
+                return (
+                    <div className="space-y-4">
+                        <div className="bg-amber-50 p-3 rounded-lg border border-amber-100 mb-4">
+                            <h4 className="text-amber-800 font-bold text-sm flex items-center gap-2">
+                                <Zap className="w-4 h-4" /> Criador de Anúncios (Nano Banana)
+                            </h4>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">1. Produto / Oferta em Destaque</label>
+                            <input
+                                value={imageWizard.product}
+                                onChange={e => setImageWizard({ ...imageWizard, product: e.target.value })}
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-amber-500"
+                                placeholder="Ex: Tênis de Corrida Vermelho"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">2. Contexto da Cena</label>
+                            <textarea
+                                value={imageWizard.context}
+                                onChange={e => setImageWizard({ ...imageWizard, context: e.target.value })}
+                                className="w-full h-20 p-3 border border-gray-300 rounded-lg outline-none focus:border-amber-500"
+                                placeholder="Ex: Em uma pista de corrida urbana, iluminação de pôr do sol..."
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">3. Estilo Artístico</label>
+                                <select
+                                    value={imageWizard.style}
+                                    onChange={e => setImageWizard({ ...imageWizard, style: e.target.value as any })}
+                                    className="w-full p-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="realistic">Fotorealista (High-End)</option>
+                                    <option value="3d">Render 3D</option>
+                                    <option value="cartoon">Ilustração/Cartoon</option>
+                                    <option value="minimalist">Minimalista</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">4. Formato</label>
+                                <select
+                                    value={imageWizard.format}
+                                    onChange={e => setImageWizard({ ...imageWizard, format: e.target.value as any })}
+                                    className="w-full p-2 border border-gray-300 rounded-lg"
+                                >
+                                    <option value="square">Quadrado (1:1) - Feed</option>
+                                    <option value="portrait">Vertical (9:16) - Stories</option>
+                                    <option value="landscape">Horizontal (16:9) - Banner</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 );
