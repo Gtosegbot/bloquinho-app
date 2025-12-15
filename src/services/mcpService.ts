@@ -123,8 +123,10 @@ export const mcpService = {
             timestamp: new Date().toISOString()
         }));
 
-        // 2. Send the ARRAY. n8n will receive 'body' as [ { ... }, { ... } ]
-        return this.call(MCP_ENDPOINTS.EMAIL, payload);
+        // 2. Send individually in parallel to ensure n8n triggers for EACH recipient
+        // (Sending an array often causes webhooks to process only the first item or treat it as one single execution)
+        const promises = payload.map(item => this.call(MCP_ENDPOINTS.EMAIL, item));
+        return Promise.all(promises);
     },
 
     async sendWhatsApp(baseMessage: string, clients: { name: string; phone: string }[]) {
@@ -176,7 +178,7 @@ export const mcpService = {
                 campaignName,
                 targetAudience: `SMS: ${clients.length} recipients`,
                 timestamp,
-                message,
+                message: message.replace(/{{name}}/g, client.name ? client.name.split(' ')[0] : 'Cliente'),
                 from_name: "Disparo Seguro",
                 brand_name: "Disparo Seguro",
                 lead_details: {

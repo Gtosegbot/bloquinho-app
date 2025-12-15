@@ -352,7 +352,7 @@ export const MarketingHub = () => {
                         return;
                     }
 
-                    await mcpService.sendWhatsApp("Olá! Campanha teste via MCP.", validTargets);
+                    await mcpService.sendWhatsApp(whatsappMessage, validTargets);
                     addLog(`✅ WhatsApp: Disparo solicitado para ${validTargets.length} contatos válidos.`);
                     break;
                 }
