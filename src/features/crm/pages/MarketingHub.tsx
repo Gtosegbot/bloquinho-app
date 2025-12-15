@@ -13,6 +13,7 @@ type CampaignType = 'whatsapp' | 'email' | 'sms' | 'scraper' | 'social' | 'ads';
 interface ScraperForm {
     url: string;
     description: string;
+    tool: 'jina' | 'firecrawl' | 'apollo' | 'browseless' | 'any';
 }
 
 interface ImageWizardState {
@@ -20,6 +21,7 @@ interface ImageWizardState {
     context: string;
     style: 'realistic' | '3d' | 'cartoon' | 'minimalist';
     format: 'square' | 'portrait' | 'landscape';
+    uploadedImages: { name: string; data: string; tag: 'subject' | 'product' | 'style' | 'other' }[];
 }
 
 interface VideoWizardState {
@@ -27,6 +29,7 @@ interface VideoWizardState {
     visualStyle: 'cinematic' | 'documentary' | 'animation' | 'ugc';
     duration: 'short' | 'medium';
     tech: 'veo3' | 'sora' | 'nano_banana';
+    uploadedImages: { name: string; data: string; tag: 'subject' | 'product' | 'style' | 'other' }[];
 }
 
 export const MarketingHub = () => {
@@ -112,18 +115,20 @@ export const MarketingHub = () => {
         product: '',
         context: '',
         style: 'realistic',
-        format: 'square'
+        format: 'square',
+        uploadedImages: []
     });
 
     const [videoWizard, setVideoWizard] = useState<VideoWizardState>({
         script: '',
         visualStyle: 'cinematic',
         duration: 'short',
-        tech: 'veo3'
+        tech: 'veo3',
+        uploadedImages: []
     });
 
     // ... existing scraper state ... (no change needed actually, just removing logs below)
-    const [scraperForm, setScraperForm] = useState<ScraperForm>({ url: '', description: '' });
+    const [scraperForm, setScraperForm] = useState<ScraperForm>({ url: '', description: '', tool: 'any' });
 
     // Cleanup: Removed duplicate logs state
 
@@ -252,6 +257,40 @@ export const MarketingHub = () => {
         reader.readAsText(file);
     };
 
+    const handleWizardImageUpload = (e: React.ChangeEvent<HTMLInputElement>, target: 'ads' | 'social') => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const base64 = event.target?.result as string;
+                const imageObj = { name: file.name, data: base64, tag: 'other' as const };
+
+                if (target === 'ads') {
+                    setImageWizard(prev => ({ ...prev, uploadedImages: [...prev.uploadedImages, imageObj] }));
+                } else {
+                    setVideoWizard(prev => ({ ...prev, uploadedImages: [...prev.uploadedImages, imageObj] }));
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+    };
+
+    const removeWizardImage = (index: number, target: 'ads' | 'social') => {
+        if (target === 'ads') {
+            setImageWizard(prev => ({
+                ...prev,
+                uploadedImages: prev.uploadedImages.filter((_, i) => i !== index)
+            }));
+        } else {
+            setVideoWizard(prev => ({
+                ...prev,
+                uploadedImages: prev.uploadedImages.filter((_, i) => i !== index)
+            }));
+        }
+    };
+
     const openModal = (type: CampaignType) => {
         if (['whatsapp', 'email', 'sms'].includes(type)) {
             if (viewMode === 'import' && previewData.length === 0) {
@@ -375,29 +414,41 @@ export const MarketingHub = () => {
                 }
 
                 case 'scraper':
-                    await mcpService.runScraper(scraperForm.url, scraperForm.description);
-                    addLog('✅ Scraper: Agente IA iniciado na URL alvo.');
+                    await mcpService.runScraper(scraperForm.url, scraperForm.description, scraperForm.tool);
+                    addLog(`✅ Scraper (${scraperForm.tool}): Agente IA iniciado.`);
                     break;
 
                 case 'social': // Video Wizard
+                    const videoCtx = videoWizard.uploadedImages.map((img, i) => `- Image ${i + 1} (${img.tag}): ${img.name}`).join('\n');
                     const videoPrompt = `
 [VIDEO SCRIPT]: ${videoWizard.script}
 [VISUAL STYLE]: ${videoWizard.visualStyle}
 [DURATION]: ${videoWizard.duration}
+[ATTACHMENTS CONTEXT]:
+${videoCtx || 'None'}
                     `.trim();
-                    await mcpService.generateVideo(videoPrompt, videoWizard.tech);
-                    addLog(`✅ Vídeo (${videoWizard.tech}): Solicitação enviada.`);
+
+                    // Passing images as 3rd arg (assuming service update)
+                    await mcpService.generateVideo(videoPrompt, videoWizard.tech, videoWizard.uploadedImages);
+                    addLog(`✅ Vídeo (${videoWizard.tech}): Solicitação enviada com ${videoWizard.uploadedImages.length} anexos.`);
                     break;
 
                 case 'ads': // Image Wizard (Nano Banana)
+                    const imgCtx = imageWizard.uploadedImages.map((img, i) => `- Image ${i + 1} (${img.tag}): ${img.name}`).join('\n');
                     const imagePrompt = `
 [PRODUCT]: ${imageWizard.product}
 [CONTEXT]: ${imageWizard.context}
 [STYLE]: ${imageWizard.style}
 [FORMAT]: ${imageWizard.format}
+[ATTACHMENTS CONTEXT]:
+${imgCtx || 'None'}
+Use the tagged images to compose the final scene exactly as requested.
                     `.trim();
-                    await mcpService.call(MCP_ENDPOINTS.NANO_ADS, { prompt: imagePrompt });
-                    addLog('✅ Nano Banana: Solicitação de imagem enviada.');
+                    await mcpService.call(MCP_ENDPOINTS.NANO_ADS, {
+                        prompt: imagePrompt,
+                        images: imageWizard.uploadedImages
+                    });
+                    addLog(`✅ Nano Banana: Solicitação de imagem enviada com ${imageWizard.uploadedImages.length} anexos.`);
                     break;
             }
             alert(`✅ Ação ${activeModal} enviada com sucesso!`);
@@ -459,6 +510,50 @@ export const MarketingHub = () => {
                                 </select>
                             </div>
                         </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Imagens de Referência/Assets (Opcional)</label>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {videoWizard.uploadedImages.map((img, idx) => (
+                                    <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group flex flex-col">
+                                        <div className="h-16 relative">
+                                            <img src={img.data} alt={img.name} className="w-full h-full object-cover" />
+                                            <button
+                                                onClick={() => removeWizardImage(idx, 'social')}
+                                                className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                        <select
+                                            value={img.tag}
+                                            onChange={(e) => {
+                                                const newImages = [...videoWizard.uploadedImages];
+                                                newImages[idx].tag = e.target.value as any;
+                                                setVideoWizard({ ...videoWizard, uploadedImages: newImages });
+                                            }}
+                                            className="h-8 text-[10px] border-t border-gray-200 bg-gray-50 outline-none px-1"
+                                        >
+                                            <option value="subject">Modelo</option>
+                                            <option value="product">Produto</option>
+                                            <option value="style">Estilo</option>
+                                            <option value="other">Outro</option>
+                                        </select>
+                                    </div>
+                                ))}
+                                <label className="w-16 h-16 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-colors">
+                                    <Upload className="w-5 h-5 text-gray-400" />
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => handleWizardImageUpload(e, 'social')}
+                                    />
+                                </label>
+                            </div>
+                            <p className="text-xs text-gray-500">Adicione fotos para guiar a criação do vídeo.</p>
+                        </div>
                     </div>
                 );
 
@@ -479,6 +574,50 @@ export const MarketingHub = () => {
                                 className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-amber-500"
                                 placeholder="Ex: Tênis de Corrida Vermelho"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Imagens de Referência (Opcional)</label>
+                            <div className="flex flex-wrap gap-2 mb-2">
+                                {imageWizard.uploadedImages.map((img, idx) => (
+                                    <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 group flex flex-col">
+                                        <div className="h-16 relative">
+                                            <img src={img.data} alt={img.name} className="w-full h-full object-cover" />
+                                            <button
+                                                onClick={() => removeWizardImage(idx, 'ads')}
+                                                className="absolute top-0 right-0 bg-red-500 text-white p-0.5 rounded-bl opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                        <select
+                                            value={img.tag}
+                                            onChange={(e) => {
+                                                const newImages = [...imageWizard.uploadedImages];
+                                                newImages[idx].tag = e.target.value as any;
+                                                setImageWizard({ ...imageWizard, uploadedImages: newImages });
+                                            }}
+                                            className="h-8 text-[10px] border-t border-gray-200 bg-gray-50 outline-none px-1"
+                                        >
+                                            <option value="subject">Modelo</option>
+                                            <option value="product">Produto</option>
+                                            <option value="style">Estilo</option>
+                                            <option value="other">Outro</option>
+                                        </select>
+                                    </div>
+                                ))}
+                                <label className="w-16 h-16 flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-amber-500 hover:bg-amber-50 transition-colors">
+                                    <Upload className="w-5 h-5 text-gray-400" />
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => handleWizardImageUpload(e, 'ads')}
+                                    />
+                                </label>
+                            </div>
+                            <p className="text-xs text-gray-500">Adicione fotos de produtos, logos ou referências.</p>
                         </div>
 
                         <div>
@@ -523,13 +662,34 @@ export const MarketingHub = () => {
             case 'scraper':
                 return (
                     <div className="space-y-4">
+                        <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4">
+                            <h4 className="text-blue-800 font-bold text-sm flex items-center gap-2">
+                                <Globe className="w-4 h-4" /> Agente de Coleta de Dados (Web Scraper)
+                            </h4>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Ferramenta / Motor de Busca</label>
+                            <select
+                                value={scraperForm.tool}
+                                onChange={e => setScraperForm({ ...scraperForm, tool: e.target.value as any })}
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500"
+                            >
+                                <option value="any">Automático (IA decide)</option>
+                                <option value="jina">Jina AI (Reader LLM)</option>
+                                <option value="firecrawl">Firecrawl (Deep Navigation)</option>
+                                <option value="apollo">Apollo.io (Contatos B2B)</option>
+                                <option value="browseless">Browseless (Headless Browser)</option>
+                            </select>
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">URL Alvo</label>
                             <input
                                 type="url"
                                 value={scraperForm.url}
                                 onChange={e => setScraperForm({ ...scraperForm, url: e.target.value })}
-                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500"
+                                className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500"
                                 placeholder="https://..."
                             />
                         </div>
@@ -538,8 +698,8 @@ export const MarketingHub = () => {
                             <textarea
                                 value={scraperForm.description}
                                 onChange={e => setScraperForm({ ...scraperForm, description: e.target.value })}
-                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
-                                placeholder="Quais dados buscar? (Emails, Telefones...)"
+                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-blue-500 resize-none"
+                                placeholder="Quais dados buscar? (Emails, Telefones, Preços...)"
                             />
                         </div>
                     </div>

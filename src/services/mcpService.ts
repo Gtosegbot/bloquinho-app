@@ -143,11 +143,12 @@ export const mcpService = {
         });
     },
 
-    async generateVideo(prompt: string, tech: 'veo3' | 'sora' | 'nano_banana') {
+    async generateVideo(prompt: string, tech: 'veo3' | 'sora' | 'nano_banana', images: { name: string; data: string }[] = []) {
         this.init();
         return this.call(MCP_ENDPOINTS.SOCIAL_VIDEO, {
             prompt,
-            tech_preference: tech
+            tech_preference: tech,
+            attachments: images
         });
     },
 
