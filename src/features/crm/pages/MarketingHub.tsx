@@ -1041,7 +1041,7 @@ Use the tagged images to compose the final scene exactly as requested.
             {/* Modals */}
             {activeModal && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                    <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-gray-900 capitalize flex items-center gap-2">
                                 <Zap className="w-5 h-5 text-yellow-500" />
