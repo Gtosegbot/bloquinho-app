@@ -102,7 +102,11 @@ export const mcpService = {
             users: client.name,
             subject: campaignData.subject,
             // Personalized Message
-            message: `Olá ${client.name ? client.name.split(' ')[0] : 'Cliente'},\n\n${campaignData.body}`,
+            // Personalized Message - Replacing variables in the body template + Footer
+            message: campaignData.body.replace(/{{name}}/g, client.name ? client.name.split(' ')[0] : 'Cliente') +
+                `<br><br><hr><div style="text-align: center; font-size: 11px; color: #888; font-family: sans-serif;">` +
+                `<p>Enviado via Bloquinho App | <a href="mailto:contato@disparoseguro.com" style="color: #888;">contato@disparoseguro.com</a></p>` +
+                `<p>Para não receber mais estes e-mails, responda com "SAIR".</p></div>`,
             emailType: 'html',
             senderName: 'Disparo Seguro',
             replyTo: 'comercial@disparoseguro.com', // Best practice default
