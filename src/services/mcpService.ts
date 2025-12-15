@@ -135,11 +135,12 @@ export const mcpService = {
         return this.call(MCP_ENDPOINTS.WHATSAPP, payload);
     },
 
-    async runScraper(url: string, instructions: string) {
+    async runScraper(url: string, instructions: string, tool: string = 'any') {
         this.init();
         return this.call(MCP_ENDPOINTS.SCRAPER, {
             url,
-            prompt: instructions
+            prompt: instructions,
+            tool
         });
     },
 
