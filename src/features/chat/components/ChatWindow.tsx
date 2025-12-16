@@ -2,7 +2,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, X, Paperclip } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Message, sendMessageToN8N } from '../services/chatService';
+import { Message } from '../services/chatService';
+import { chatWithSalesBot } from '../../../services/gemini';
 import { MessageBubble } from './MessageBubble';
 
 interface ChatWindowProps {
@@ -46,16 +47,45 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
         setIsTyping(true);
 
         try {
-            const responseText = await sendMessageToN8N(userMsg.text);
+            // Internal Sales Bot (Gemini)
+            const responseText = await chatWithSalesBot(userMsg.text);
+
+            let displayContent = responseText;
+            let type: 'text' | 'payment_request' | 'handover' = 'text';
+
+            if (responseText.includes('[HANDOVER]')) {
+                displayContent = responseText.replace('[HANDOVER]', '');
+                type = 'handover';
+            } else if (responseText.includes('[PAYMENT:')) {
+                displayContent = responseText.replace(/\[PAYMENT:(.*?)\]/, '$1'); // Keep the value in text for now, UI logic below
+                type = 'payment_request';
+            }
 
             const botMsg: Message = {
                 id: (Date.now() + 1).toString(),
-                text: responseText,
+                text: displayContent,
                 sender: 'bot',
                 timestamp: new Date(),
+                // We'll need to extend Message type later for custom UI, or just append distinct bubbles
             };
 
             setMessages((prev) => [...prev, botMsg]);
+
+            // Inject special UI bubbles
+            if (type === 'payment_request') {
+                const value = responseText.match(/\[PAYMENT:(.*?)\]/)?.[1] || '0,00';
+                setMessages(prev => [...prev, {
+                    id: Date.now().toString() + '_pay',
+                    text: `Gerando QR Code Pix de R$ ${value}... 🪙`,
+                    sender: 'bot'
+                }]);
+            } else if (type === 'handover') {
+                setMessages(prev => [...prev, {
+                    id: Date.now().toString() + '_human',
+                    text: "Conectando com atendente humano... 👨‍💻",
+                    sender: 'bot'
+                }]);
+            }
         } catch (error) {
             console.error("Erro ao enviar mensagem:", error);
         } finally {

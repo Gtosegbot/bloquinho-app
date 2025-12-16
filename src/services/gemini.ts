@@ -80,6 +80,37 @@ export const chatWithRAG = async (userMessage: string, contextDocs: any[]) => {
         return response.text();
     } catch (error: any) {
         console.error("Gemini RAG Error:", error);
-        return "Erro ao consultar o cérebro.";
+        return "Erro ao consultar o cérebro. 🧠";
+    }
+};
+
+const SALES_SYSTEM_PROMPT = `
+Você é o Bloquinho Vendedor.
+OBJETIVO: Vender produtos gráficos do catálogo.
+REGRAS DE NEGÓCIO:
+1. Pagamento: Padrão é 50% de sinal (Pix) e 50% na entrega.
+2. Se o cliente aceitar o preço: Gere o Pix do sinal (50%). Responda com a tag [PAYMENT:VALOR_DO_SINAL].
+3. Se o cliente pedir desconto ou propar um prazo diferente: NÃO NEGOCIE. Diga que vai chamar um atendente humano e responda com a tag [HANDOVER].
+4. Seja persuasivo e simpático.
+
+CATÁLOGO:
+${JSON.stringify(productCatalog, null, 2)}
+`;
+
+export const chatWithSalesBot = async (userMessage: string, history: string[] = []) => {
+    if (!model) initializeGemini();
+
+    try {
+        const result = await model.generateContent([
+            SALES_SYSTEM_PROMPT,
+            ...history,
+            `Cliente: ${userMessage}`,
+            "Bloquinho:"
+        ]);
+        const response = await result.response;
+        return response.text();
+    } catch (error: any) {
+        console.error("Sales Bot Error:", error);
+        return "Desculpe, estou com uma instabilidade. Poderia me chamar no WhatsApp?";
     }
 };
