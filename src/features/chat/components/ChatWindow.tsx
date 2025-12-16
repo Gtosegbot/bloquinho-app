@@ -77,13 +77,15 @@ export const ChatWindow = ({ isOpen, onClose }: ChatWindowProps) => {
                 setMessages(prev => [...prev, {
                     id: Date.now().toString() + '_pay',
                     text: `Gerando QR Code Pix de R$ ${value}... 🪙`,
-                    sender: 'bot'
+                    sender: 'bot',
+                    timestamp: new Date()
                 }]);
             } else if (type === 'handover') {
                 setMessages(prev => [...prev, {
                     id: Date.now().toString() + '_human',
                     text: "Conectando com atendente humano... 👨‍💻",
-                    sender: 'bot'
+                    sender: 'bot',
+                    timestamp: new Date()
                 }]);
             }
         } catch (error) {
