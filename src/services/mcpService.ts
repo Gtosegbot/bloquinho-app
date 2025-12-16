@@ -22,7 +22,10 @@ export const MCP_ENDPOINTS = {
     // Intelligence & Analytics
     // Intelligence & Analytics
     ANALYTICS: `${WEBHOOK_BASE}/gestorTrafego`,
-    MCP_SERVER: 'https://workflow.disparoseguro.com/mcp-server/http'
+    MCP_SERVER: 'https://workflow.disparoseguro.com/mcp-server/http',
+
+    // Knowledge Base
+    RAG_UPLOAD: `${WEBHOOK_BASE}/knowledge-base`
 };
 
 // Types for Payload Structures
@@ -207,5 +210,15 @@ export const mcpService = {
         // The user example shows the entire batch wrapped in an array, 
         // effectively sending [ { item1 }, { item2 } ]
         return this.call(MCP_ENDPOINTS.SMS, payload);
+    },
+
+    async uploadDocument(fileName: string, fileData: string, type: 'pdf' | 'csv' | 'txt') {
+        this.init();
+        return this.call(MCP_ENDPOINTS.RAG_UPLOAD, {
+            fileName,
+            data: fileData, // Base64
+            type,
+            timestamp: new Date().toISOString()
+        });
     }
 };

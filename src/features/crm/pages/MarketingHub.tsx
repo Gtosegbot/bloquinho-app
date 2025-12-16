@@ -106,6 +106,7 @@ export const MarketingHub = () => {
     // Legacy simple forms (keeping for compatibility if needed, but wizards replace them)
     const [emailSubject, setEmailSubject] = useState('');
     const [emailBody, setEmailBody] = useState('');
+    const [offerUrl, setOfferUrl] = useState('');
     const [smsMessage, setSmsMessage] = useState('');
     const [whatsappMessage, setWhatsappMessage] = useState('');
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
@@ -382,6 +383,7 @@ export const MarketingHub = () => {
                     await mcpService.sendEmailCampaign({
                         subject: emailSubject,
                         body: emailBody || "<p>Olá, oferta especial!</p>",
+                        offerUrl, // Passed to service
                         recipients: validTargets // Now passing objects
                     });
                     addLog(`✅ Email: Enviado para ${validTargets.length} endereços válidos.`);

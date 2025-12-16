@@ -1,16 +1,56 @@
 
 import { useState } from 'react';
-import { Upload, Search, Trash2 } from 'lucide-react';
+import { Upload, Search, Trash2, FileText, CheckCircle } from 'lucide-react';
 import { productCatalog } from '../data/catalog';
+import { mcpService } from '../../../services/mcpService';
+
+interface Document {
+    name: string;
+    type: string;
+    date: string;
+    status: 'indexed' | 'processing';
+}
 
 export const KnowledgeBase = () => {
     const [activeTab, setActiveTab] = useState<'products' | 'docs'>('products');
     const [searchTerm, setSearchTerm] = useState('');
+    const [documents, setDocuments] = useState<Document[]>([]);
+    const [uploading, setUploading] = useState(false);
 
     const filteredProducts = productCatalog.filter(p =>
         p.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.codigo.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const base64 = event.target?.result as string;
+            setUploading(true);
+            try {
+                // Send to AI Ecosystem (MCP)
+                await mcpService.uploadDocument(file.name, base64, 'pdf'); // Defaulting to pdf/generic
+
+                // Update Local State
+                setDocuments(prev => [...prev, {
+                    name: file.name,
+                    type: file.type || 'PDF',
+                    date: new Date().toLocaleDateString(),
+                    status: 'indexed'
+                }]);
+                alert('Documento enviado para o Ecossistema IA com sucesso! 🧠');
+            } catch (error) {
+                console.error(error);
+                alert('Erro ao enviar documento.');
+            } finally {
+                setUploading(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
 
     return (
         <div className="space-y-6">
@@ -20,10 +60,11 @@ export const KnowledgeBase = () => {
                     <p className="text-gray-500">Gerencie o conhecimento utilizado para inteligência e orçamentos.</p>
                 </div>
                 {activeTab === 'docs' && (
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                    <label className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors cursor-pointer">
                         <Upload className="w-4 h-4" />
-                        Upload PDF
-                    </button>
+                        {uploading ? 'Enviando...' : 'Upload PDF'}
+                        <input type="file" className="hidden" accept=".pdf,.txt,.csv" onChange={handleFileUpload} disabled={uploading} />
+                    </label>
                 )}
             </header>
 
@@ -101,16 +142,58 @@ export const KnowledgeBase = () => {
                 </div>
             )}
 
-            {/* Docs Placeholder */}
+            {/* Docs List */}
             {activeTab === 'docs' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white p-6 rounded-xl border border-dashed border-gray-300 flex flex-col items-center justify-center text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group h-64">
-                        <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
-                            <Upload className="w-6 h-6" />
+                <div className="space-y-4">
+                    {documents.length === 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <label className="bg-white p-6 rounded-xl border border-dashed border-gray-300 flex flex-col items-center justify-center text-center hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group h-64">
+                                <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 mb-4 group-hover:scale-110 transition-transform">
+                                    <Upload className="w-6 h-6" />
+                                </div>
+                                <h3 className="font-semibold text-gray-800 mb-1">Upload de Novo Documento</h3>
+                                <p className="text-sm text-gray-400">PDFs, Manuais ou Tabelas</p>
+                                <input type="file" className="hidden" accept=".pdf,.txt,.csv" onChange={handleFileUpload} disabled={uploading} />
+                            </label>
                         </div>
-                        <h3 className="font-semibold text-gray-800 mb-1">Upload de Novo Documento</h3>
-                        <p className="text-sm text-gray-400">PDFs, Manuais ou Tabelas</p>
-                    </div>
+                    ) : (
+                        <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                            <table className="w-full text-left">
+                                <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-semibold border-b border-gray-100">
+                                    <tr>
+                                        <th className="px-6 py-4">Nome</th>
+                                        <th className="px-6 py-4">Data</th>
+                                        <th className="px-6 py-4">Status IA</th>
+                                        <th className="px-6 py-4">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {documents.map((doc, idx) => (
+                                        <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                                            <td className="px-6 py-4 flex items-center gap-3">
+                                                <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                                                    <FileText className="w-5 h-5" />
+                                                </div>
+                                                <span className="font-medium text-gray-800">{doc.name}</span>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-gray-500">{doc.date}</td>
+                                            <td className="px-6 py-4">
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <CheckCircle className="w-3 h-3" />
+                                                    Indexado
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <button className="text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                 </div>
             )}
         </div>
