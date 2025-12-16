@@ -1,6 +1,5 @@
-
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, Database, Calculator, LogOut, Users } from 'lucide-react';
+import { LayoutDashboard, Database, Calculator, LogOut, Users, Sparkles } from 'lucide-react';
 import bloquinhoHead from '../../assets/bloquinho.png'; // Corrected path
 
 export const AdminLayout = () => {
@@ -29,6 +28,13 @@ export const AdminLayout = () => {
                     >
                         <Users className="w-5 h-5" />
                         Clientes & Importação
+                    </NavLink>
+                    <NavLink
+                        to="insights"
+                        className={({ isActive }) => `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive ? 'bg-purple-50 text-purple-600 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                    >
+                        <Sparkles className="w-5 h-5" />
+                        Insights (Brain)
                     </NavLink>
                     <NavLink
                         to="knowledge"

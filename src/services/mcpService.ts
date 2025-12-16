@@ -25,7 +25,8 @@ export const MCP_ENDPOINTS = {
     MCP_SERVER: 'https://workflow.disparoseguro.com/mcp-server/http',
 
     // Knowledge Base
-    RAG_UPLOAD: `${WEBHOOK_BASE}/knowledge-base`
+    RAG_UPLOAD: `${WEBHOOK_BASE}/knowledge-base`,
+    RAG_CHAT: `${WEBHOOK_BASE}/rag-chat`
 };
 
 // Types for Payload Structures
@@ -219,6 +220,16 @@ export const mcpService = {
             fileName,
             data: fileData, // Base64
             type,
+            timestamp: new Date().toISOString()
+        });
+    },
+
+    async chatWithCRM(message: string, contextData: any = {}) {
+        this.init();
+        return this.call(MCP_ENDPOINTS.RAG_CHAT, {
+            message,
+            context: contextData, // Can pass current view data like leads/sales
+            role: 'internal_assistant',
             timestamp: new Date().toISOString()
         });
     }

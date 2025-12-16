@@ -10,6 +10,7 @@ import { AuthProvider } from './features/auth/AuthContext';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { KanbanBoard } from './features/crm/components/KanbanBoard';
 import { MarketingHub } from './features/crm/pages/MarketingHub';
+import { InsightsPage } from './features/crm/pages/InsightsPage';
 import { Calculator } from './features/admin/pages/Calculator';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
                             <Route path="dashboard" element={<KanbanBoard />} />
                             <Route path="clients" element={<MarketingHub />} />
                             <Route path="knowledge" element={<KnowledgeBase />} />
+                            <Route path="insights" element={<InsightsPage />} />
                             <Route path="calculator" element={<Calculator />} />
                         </Route>
                     </Route>
