@@ -94,7 +94,7 @@ export const mcpService = {
      * Uses a Batch Array pattern to match the n8n "Split In Batches" or compatible node structure.
      * Sending an array of objects allows n8n to process each email individually.
      */
-    async sendEmailCampaign(campaignData: { subject: string; body: string; recipients: { name: string; email: string }[] }) {
+    async sendEmailCampaign(campaignData: { subject: string; body: string; offerUrl?: string; recipients: { name: string; email: string }[] }) {
         // Ensure initialization (fire and forget)
         this.init();
 
@@ -107,9 +107,10 @@ export const mcpService = {
             // Personalized Message
             // Personalized Message - Replacing variables in the body template + Footer
             message: campaignData.body.replace(/{{name}}/g, client.name ? client.name.split(' ')[0] : 'Cliente') +
+                (campaignData.offerUrl ? `<br><br><div style="text-align:center"><a href="${campaignData.offerUrl}" style="background-color: #6d28d9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">Ver Oferta / Acessar</a></div>` : '') +
                 `<br><br><hr><div style="text-align: center; font-size: 11px; color: #888; font-family: sans-serif;">` +
                 `<p>Enviado via Bloquinho App | <a href="mailto:contato@disparoseguro.com" style="color: #888;">contato@disparoseguro.com</a></p>` +
-                `<p>Para não receber mais estes e-mails, responda com "SAIR".</p></div>`,
+                `<p>Para não receber mais estes e-mails, <a href="mailto:contato@disparoseguro.com?subject=SAIR" style="color: #888; text-decoration: underline;">clique aqui para sair</a>.</p></div>`,
             emailType: 'html',
             senderName: 'Disparo Seguro',
             replyTo: 'comercial@disparoseguro.com', // Best practice default
