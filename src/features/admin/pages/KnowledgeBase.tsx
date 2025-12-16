@@ -1,13 +1,16 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Search, Trash2, FileText, CheckCircle } from 'lucide-react';
 import { productCatalog } from '../data/catalog';
-import { mcpService } from '../../../services/mcpService';
+import { db, storage } from '../../../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, addDoc, getDocs } from 'firebase/firestore';
 
 interface Document {
     name: string;
     type: string;
     date: string;
+    url?: string;
     status: 'indexed' | 'processing';
 }
 
@@ -17,39 +20,51 @@ export const KnowledgeBase = () => {
     const [documents, setDocuments] = useState<Document[]>([]);
     const [uploading, setUploading] = useState(false);
 
+    useEffect(() => {
+        const fetchDocs = async () => {
+            const querySnapshot = await getDocs(collection(db, "knowledge_base"));
+            const docs = querySnapshot.docs.map(doc => doc.data() as Document);
+            setDocuments(docs);
+        };
+        fetchDocs();
+    }, []);
+
     const filteredProducts = productCatalog.filter(p =>
         p.produto.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.codigo.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const base64 = event.target?.result as string;
-            setUploading(true);
-            try {
-                // Send to AI Ecosystem (MCP)
-                await mcpService.uploadDocument(file.name, base64, 'pdf'); // Defaulting to pdf/generic
+        setUploading(true);
+        try {
+            // 1. Upload to Firebase Storage
+            const storageRef = ref(storage, `knowledge-base/${file.name}`);
+            await uploadBytes(storageRef, file);
+            const downloadURL = await getDownloadURL(storageRef);
 
-                // Update Local State
-                setDocuments(prev => [...prev, {
-                    name: file.name,
-                    type: file.type || 'PDF',
-                    date: new Date().toLocaleDateString(),
-                    status: 'indexed'
-                }]);
-                alert('Documento enviado para o Ecossistema IA com sucesso! 🧠');
-            } catch (error) {
-                console.error(error);
-                alert('Erro ao enviar documento.');
-            } finally {
-                setUploading(false);
-            }
-        };
-        reader.readAsDataURL(file);
+            // 2. Save Metadata to Firestore
+            const newDoc: Document = {
+                name: file.name,
+                type: file.type || 'PDF',
+                date: new Date().toLocaleDateString(),
+                url: downloadURL,
+                status: 'indexed'
+            };
+
+            await addDoc(collection(db, "knowledge_base"), newDoc);
+
+            // Update Local State directly
+            setDocuments(prev => [...prev, newDoc]);
+            alert('Documento salvo no Banco de Dados Interno (Firebase)! 🧠');
+        } catch (error) {
+            console.error("Upload Error:", error);
+            alert('Erro ao salvar no banco interno.');
+        } finally {
+            setUploading(false);
+        }
     };
 
     return (

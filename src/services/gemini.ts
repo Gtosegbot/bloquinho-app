@@ -55,3 +55,31 @@ export const getGeminiResponse = async (userMessage: string) => {
         return `Erro Técnico Detalhado: ${error.message || JSON.stringify(error)}`;
     }
 };
+
+export const chatWithRAG = async (userMessage: string, contextDocs: any[]) => {
+    if (!model) initializeGemini();
+
+    const contextText = contextDocs.map(doc => `[DOCUMENTO: ${doc.name}]\n${doc.content || 'Conteúdo não extraível, apenas referência.'}`).join('\n\n');
+
+    const ragPrompt = `
+    ${SYSTEM_PROMPT}
+
+    CONTEXTO EXTRAÍDO DA BASE DE CONHECIMENTO:
+    ${contextText}
+
+    Use o contexto acima para responder a pergunta do usuário. Se a resposta não estiver no contexto, use seu conhecimento geral mas avise que não encontrou nos documentos.
+    `;
+
+    try {
+        const result = await model.generateContent([
+            ragPrompt,
+            `Pergunta: ${userMessage}`,
+            "Resposta:"
+        ]);
+        const response = await result.response;
+        return response.text();
+    } catch (error: any) {
+        console.error("Gemini RAG Error:", error);
+        return "Erro ao consultar o cérebro.";
+    }
+};

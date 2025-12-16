@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Send, Sparkles, Bot, User, BrainCircuit } from 'lucide-react';
-import { mcpService } from '../../../services/mcpService';
+import { chatWithRAG } from '../../../services/gemini';
+import { db } from '../../../lib/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 export const InsightsPage = () => {
     const [messages, setMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([
@@ -8,6 +10,20 @@ export const InsightsPage = () => {
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const [ragContext, setRagContext] = useState<any[]>([]);
+
+    useEffect(() => {
+        const loadContext = async () => {
+            try {
+                const snapshot = await getDocs(collection(db, "knowledge_base"));
+                const docs = snapshot.docs.map(d => d.data());
+                setRagContext(docs);
+            } catch (e) {
+                console.error("Error loading RAG context:", e);
+            }
+        };
+        loadContext();
+    }, []);
 
     const handleSend = async () => {
         if (!input.trim() || loading) return;
@@ -18,11 +34,9 @@ export const InsightsPage = () => {
         setLoading(true);
 
         try {
-            // Future improvement: Pass relevant context from CRM Store/Context
-            const response = await mcpService.chatWithCRM(userMsg);
-
-            // Assuming simplified string response for now, adapt based on real payload
-            const assistantMsg = response.reply || response.message || "Entendido, mas não obtive resposta do cérebro.";
+            // Local Gemini RAG Call (No Webhook/N8N)
+            const responseText = await chatWithRAG(userMsg, ragContext);
+            const assistantMsg = responseText || "Não consegui gerar uma resposta.";
 
             setMessages(prev => [...prev, { role: 'assistant', content: assistantMsg }]);
         } catch (error) {
@@ -56,11 +70,11 @@ export const InsightsPage = () => {
             {/* Chat Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((msg, idx) => (
-                    <div key={idx} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${msg.role === 'user' ? 'bg-gray-200 text-gray-600' : 'bg-purple-100 text-purple-600'}`}>
+                    <div key={idx} className={`flex gap - 3 ${msg.role === 'user' ? 'flex-row-reverse' : ''} `}>
+                        <div className={`w - 8 h - 8 rounded - full flex items - center justify - center shrink - 0 ${msg.role === 'user' ? 'bg-gray-200 text-gray-600' : 'bg-purple-100 text-purple-600'} `}>
                             {msg.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                         </div>
-                        <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.role === 'user' ? 'bg-gray-800 text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none'}`}>
+                        <div className={`max - w - [80 %] p - 3 rounded - 2xl text - sm ${msg.role === 'user' ? 'bg-gray-800 text-white rounded-tr-none' : 'bg-gray-100 text-gray-800 rounded-tl-none'} `}>
                             {msg.content}
                         </div>
                     </div>
