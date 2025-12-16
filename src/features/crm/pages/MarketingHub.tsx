@@ -744,355 +744,353 @@ Use the tagged images to compose the final scene exactly as requested.
                                     placeholder="Conteúdo do email..."
                                 />
                             </div>
-                            </div>
-                )
-        }
+                        )}
 
-        {
-            selectedTemplate && (
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Link do Botão / Oferta (Opcional)</label>
-                    <input
-                        value={offerUrl}
-                        onChange={e => setOfferUrl(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500 mb-2"
-                        placeholder="https://exemplo.com/abrir-oferta"
-                    />
-                    <p className="text-xs text-gray-500">Se preenchido, adicionará um botão "Ver Oferta" no final do e-mail.</p>
-                </div>
-            )
-        }
+                        {
+                            selectedTemplate && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Link do Botão / Oferta (Opcional)</label>
+                                    <input
+                                        value={offerUrl}
+                                        onChange={e => setOfferUrl(e.target.value)}
+                                        className="w-full p-2 border border-gray-300 rounded-lg outline-none focus:border-purple-500 mb-2"
+                                        placeholder="https://exemplo.com/abrir-oferta"
+                                    />
+                                    <p className="text-xs text-gray-500">Se preenchido, adicionará um botão "Ver Oferta" no final do e-mail.</p>
+                                </div>
+                            )
+                        }
                     </div >
                 );
 
             case 'whatsapp':
-return (
-    <div className="space-y-4">
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem WhatsApp</label>
-            <textarea
-                value={whatsappMessage}
-                onChange={e => setWhatsappMessage(e.target.value)}
-                className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
-                placeholder="Digite sua mensagem para o WhatsApp... (Olá [Nome] será adicionado automaticamente)"
-            />
-            <p className="text-xs text-gray-500">
-                Dica: A saudação inicial com o nome do cliente é adicionada automaticamente.
-            </p>
-        </div>
-    </div>
-);
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem WhatsApp</label>
+                            <textarea
+                                value={whatsappMessage}
+                                onChange={e => setWhatsappMessage(e.target.value)}
+                                className="w-full h-32 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Digite sua mensagem para o WhatsApp... (Olá [Nome] será adicionado automaticamente)"
+                            />
+                            <p className="text-xs text-gray-500">
+                                Dica: A saudação inicial com o nome do cliente é adicionada automaticamente.
+                            </p>
+                        </div>
+                    </div>
+                );
 
             case 'sms':
-return (
-    <div className="space-y-4">
-        <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem SMS</label>
-            <textarea
-                value={smsMessage}
-                onChange={e => setSmsMessage(e.target.value)}
-                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
-                placeholder="Digite sua mensagem curta..."
-                maxLength={160}
-            />
-            <div className="text-right text-xs text-gray-500">
-                {smsMessage.length}/160 caracteres
-            </div>
-        </div>
-    </div>
-);
+                return (
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Mensagem SMS</label>
+                            <textarea
+                                value={smsMessage}
+                                onChange={e => setSmsMessage(e.target.value)}
+                                className="w-full h-24 p-3 border border-gray-300 rounded-lg outline-none focus:border-purple-500 resize-none"
+                                placeholder="Digite sua mensagem curta..."
+                                maxLength={160}
+                            />
+                            <div className="text-right text-xs text-gray-500">
+                                {smsMessage.length}/160 caracteres
+                            </div>
+                        </div>
+                    </div>
+                );
             default:
-return (
-    <div className="text-center py-6 text-gray-600">
-        <p>Selecione uma automação.</p>
-    </div>
-);
+                return (
+                    <div className="text-center py-6 text-gray-600">
+                        <p>Selecione uma automação.</p>
+                    </div>
+                );
         }
     };
 
-return (
-    <div className="space-y-6">
-        <header className="flex justify-between items-center">
-            <div>
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <Brain className="w-8 h-8 text-purple-600" />
-                    Marketing Hub & MCP
-                </h1>
-                <p className="text-gray-500">Gestão centralizada de automações via n8n.</p>
-            </div>
-        </header>
+    return (
+        <div className="space-y-6">
+            <header className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <Brain className="w-8 h-8 text-purple-600" />
+                        Marketing Hub & MCP
+                    </h1>
+                    <p className="text-gray-500">Gestão centralizada de automações via n8n.</p>
+                </div>
+            </header>
 
-        <div className="grid md:grid-cols-3 gap-6">
-            {/* Left Column: Import */}
-            <div className="md:col-span-1 space-y-6">
-                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Upload className="w-5 h-5 text-blue-600" />
-                        1. Importar Base
-                    </h3>
-                    {/* Status Message for large imports */}
-                    {loading === 'importing' && (
-                        <div className="mb-4 p-3 bg-blue-50 text-blue-700 text-sm rounded-lg flex items-center gap-2 animate-pulse">
-                            <Upload className="w-4 h-4" /> Processando contatos...
+            <div className="grid md:grid-cols-3 gap-6">
+                {/* Left Column: Import */}
+                <div className="md:col-span-1 space-y-6">
+                    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                        <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+                            <Upload className="w-5 h-5 text-blue-600" />
+                            1. Importar Base
+                        </h3>
+                        {/* Status Message for large imports */}
+                        {loading === 'importing' && (
+                            <div className="mb-4 p-3 bg-blue-50 text-blue-700 text-sm rounded-lg flex items-center gap-2 animate-pulse">
+                                <Upload className="w-4 h-4" /> Processando contatos...
+                            </div>
+                        )}
+
+                        <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors">
+                            <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
+                            <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center">
+                                <Upload className="w-10 h-10 text-gray-300 mb-2" />
+                                <span className="text-blue-600 font-medium">Selecionar CSV</span>
+                                <span className="text-gray-400 text-xs mt-1">Nome, Email, Telefone, etc...</span>
+                            </label>
+                        </div>
+
+                        {previewData.length > 0 && (
+                            <div className="mt-4">
+                                <div className="text-xs text-center text-gray-500 mb-2">
+                                    {previewData.length} contatos prontos para importar.
+                                </div>
+                                <button
+                                    onClick={processImport}
+                                    disabled={loading === 'importing'}
+                                    className="w-full py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {loading === 'importing' ? 'Salvando...' : 'Confirmar Importação'}
+                                </button>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={downloadTemplate}
+                            className="w-full mt-2 py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 rounded-lg transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Upload className="w-4 h-4 rotate-180" /> Baixar Modelo CSV
+                        </button>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm h-[300px] overflow-y-auto">
+                        <h3 className="text-sm font-bold text-gray-700 mb-2">Logs do Sistema de Execução</h3>
+                        <div className="space-y-2">
+                            {logs.length === 0 && <p className="text-xs text-gray-400 italic">Nenhuma atividade recente.</p>}
+                            {logs.map((log, i) => (
+                                <p key={i} className="text-xs text-mono text-gray-600 border-b border-gray-50 pb-1">{log}</p>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Middle/Right: Actions & Preview */}
+                <div className="md:col-span-2 space-y-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        <CampaignButton
+                            icon={<Send className="w-4 h-4" />}
+                            label="WhatsApp"
+                            desc="Disparo em massa"
+                            onClick={() => openModal('whatsapp')}
+                            loading={loading === 'whatsapp'}
+                        />
+                        <CampaignButton
+                            icon={<Mail className="w-4 h-4" />}
+                            label="Email Mkt"
+                            desc="Campanha HTML"
+                            onClick={() => openModal('email')}
+                            loading={loading === 'email'}
+                        />
+                        <CampaignButton
+                            icon={<MessageSquare className="w-4 h-4" />}
+                            label="SMS"
+                            desc="Avisos Rápidos"
+                            onClick={() => openModal('sms')}
+                            loading={loading === 'sms'}
+                        />
+                        <CampaignButton
+                            icon={<Globe className="w-4 h-4" />}
+                            label="Scraper"
+                            desc="Extrair Leads"
+                            onClick={() => openModal('scraper')}
+                            loading={loading === 'scraper'}
+                        />
+                        <CampaignButton
+                            icon={<Video className="w-4 h-4" />}
+                            label="Vídeo AI"
+                            desc="Sora / VEO3"
+                            onClick={() => openModal('social')}
+                            loading={loading === 'social'}
+                        />
+                        <CampaignButton
+                            icon={<BarChart className="w-4 h-4" />}
+                            label="Nano Ads"
+                            desc="Gestão Tráfego"
+                            onClick={() => openModal('ads')}
+                            loading={loading === 'ads'}
+                        />
+                    </div>
+
+                    {/* View Switcher & Toolbar */}
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                        <div className="flex justify-between items-center mb-4">
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setViewMode('database')}
+                                    className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 ${viewMode === 'database' ? 'bg-purple-100 text-purple-700' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    <Users className="w-4 h-4" /> Base de Clientes ({dbClients.length})
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('import')}
+                                    className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 ${viewMode === 'import' ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-50'}`}
+                                >
+                                    <Upload className="w-4 h-4" /> Importação ({previewData.length})
+                                </button>
+                            </div>
+
+                            {viewMode === 'database' && (
+                                <div className="flex gap-2">
+                                    {selectedIds.length > 0 && (
+                                        <button
+                                            onClick={() => setShowTagModal(true)}
+                                            className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center gap-1 transition-colors"
+                                        >
+                                            <Tag className="w-3 h-3" />
+                                            Adicionar Tag ({selectedIds.length})
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* List Content */}
+                        <div className="overflow-x-auto max-h-[500px]">
+                            {viewMode === 'import' && previewData.length === 0 && (
+                                <div className="text-center py-10 text-gray-400">
+                                    <Upload className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                                    <p>Nenhum arquivo CSV carregado para pré-visualização.</p>
+                                </div>
+                            )}
+
+                            {(viewMode === 'database' || (viewMode === 'import' && previewData.length > 0)) && (
+                                <table className="w-full text-left border-collapse text-sm">
+                                    <thead className="sticky top-0 bg-white z-10 shadow-sm">
+                                        <tr className="border-b border-gray-100 text-gray-500 bg-gray-50/50">
+                                            {viewMode === 'database' && (
+                                                <th className="py-2 px-3 w-10">
+                                                    <button onClick={toggleSelectAll}>
+                                                        {selectedIds.length === dbClients.length && dbClients.length > 0 ?
+                                                            <CheckSquare className="w-4 h-4 text-purple-600" /> :
+                                                            <Square className="w-4 h-4 text-gray-300" />
+                                                        }
+                                                    </button>
+                                                </th>
+                                            )}
+                                            <th className="py-2 px-3">Nome</th>
+                                            <th className="py-2 px-3">Email/Contato</th>
+                                            {viewMode === 'database' && <th className="py-2 px-3">Tags</th>}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {(viewMode === 'database' ? dbClients : previewData).map((row, idx) => {
+                                            // Handle potential missing IDs in preview by using index fallback
+                                            const rowId = (row as Customer).id || `preview-${idx}`;
+                                            const isSelected = selectedIds.includes(rowId);
+
+                                            return (
+                                                <tr key={rowId} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${isSelected ? 'bg-purple-50 hover:bg-purple-50' : ''}`}>
+                                                    {viewMode === 'database' && (
+                                                        <td className="py-2 px-3">
+                                                            <button onClick={() => toggleSelectOne(rowId)}>
+                                                                {isSelected ?
+                                                                    <CheckSquare className="w-4 h-4 text-purple-600" /> :
+                                                                    <Square className="w-4 h-4 text-gray-300" />
+                                                                }
+                                                            </button>
+                                                        </td>
+                                                    )}
+                                                    <td className="py-2 px-3">
+                                                        <div className="font-medium text-gray-800">{row.name || 'Sem Nome'}</div>
+                                                    </td>
+                                                    <td className="py-2 px-3 text-xs font-mono text-gray-600">
+                                                        <div>{row.email}</div>
+                                                        <div>{row.phone}</div>
+                                                    </td>
+                                                    {viewMode === 'database' && (
+                                                        <td className="py-2 px-3">
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {(row.tags || []).map((tag: string, tIdx: number) => (
+                                                                    <span key={tIdx} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] border border-gray-200">
+                                                                        {tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                    )}
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Tag Modal */}
+                    {showTagModal && (
+                        <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-[60]">
+                            <div className="bg-white p-4 rounded-xl shadow-xl w-64 animate-fade-in">
+                                <h4 className="font-bold text-gray-800 mb-2">Nova Tag</h4>
+                                <input
+                                    autoFocus
+                                    className="w-full border p-2 rounded mb-2 text-sm"
+                                    placeholder="Ex: VIP, Quente..."
+                                    value={newTag}
+                                    onChange={e => setNewTag(e.target.value)}
+                                    onKeyDown={e => e.key === 'Enter' && handleAddTag()}
+                                />
+                                <div className="flex gap-2">
+                                    <button onClick={() => setShowTagModal(false)} className="flex-1 py-1 text-xs text-gray-500 bg-gray-100 rounded">Cancelar</button>
+                                    <button onClick={handleAddTag} className="flex-1 py-1 text-xs text-white bg-purple-600 rounded">Salvar</button>
+                                </div>
+                            </div>
                         </div>
                     )}
 
-                    <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center hover:bg-gray-50 transition-colors">
-                        <input type="file" accept=".csv" onChange={handleFileUpload} className="hidden" id="csv-upload" />
-                        <label htmlFor="csv-upload" className="cursor-pointer flex flex-col items-center">
-                            <Upload className="w-10 h-10 text-gray-300 mb-2" />
-                            <span className="text-blue-600 font-medium">Selecionar CSV</span>
-                            <span className="text-gray-400 text-xs mt-1">Nome, Email, Telefone, etc...</span>
-                        </label>
-                    </div>
-
-                    {previewData.length > 0 && (
-                        <div className="mt-4">
-                            <div className="text-xs text-center text-gray-500 mb-2">
-                                {previewData.length} contatos prontos para importar.
-                            </div>
-                            <button
-                                onClick={processImport}
-                                disabled={loading === 'importing'}
-                                className="w-full py-2 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {loading === 'importing' ? 'Salvando...' : 'Confirmar Importação'}
-                            </button>
-                        </div>
-                    )}
-
-                    <button
-                        onClick={downloadTemplate}
-                        className="w-full mt-2 py-2 text-sm text-purple-600 font-medium hover:bg-purple-50 rounded-lg transition-colors flex items-center justify-center gap-2"
-                    >
-                        <Upload className="w-4 h-4 rotate-180" /> Baixar Modelo CSV
-                    </button>
-                </div>
-
-                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm h-[300px] overflow-y-auto">
-                    <h3 className="text-sm font-bold text-gray-700 mb-2">Logs do Sistema de Execução</h3>
-                    <div className="space-y-2">
-                        {logs.length === 0 && <p className="text-xs text-gray-400 italic">Nenhuma atividade recente.</p>}
-                        {logs.map((log, i) => (
-                            <p key={i} className="text-xs text-mono text-gray-600 border-b border-gray-50 pb-1">{log}</p>
-                        ))}
-                    </div>
                 </div>
             </div>
 
-            {/* Middle/Right: Actions & Preview */}
-            <div className="md:col-span-2 space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                    <CampaignButton
-                        icon={<Send className="w-4 h-4" />}
-                        label="WhatsApp"
-                        desc="Disparo em massa"
-                        onClick={() => openModal('whatsapp')}
-                        loading={loading === 'whatsapp'}
-                    />
-                    <CampaignButton
-                        icon={<Mail className="w-4 h-4" />}
-                        label="Email Mkt"
-                        desc="Campanha HTML"
-                        onClick={() => openModal('email')}
-                        loading={loading === 'email'}
-                    />
-                    <CampaignButton
-                        icon={<MessageSquare className="w-4 h-4" />}
-                        label="SMS"
-                        desc="Avisos Rápidos"
-                        onClick={() => openModal('sms')}
-                        loading={loading === 'sms'}
-                    />
-                    <CampaignButton
-                        icon={<Globe className="w-4 h-4" />}
-                        label="Scraper"
-                        desc="Extrair Leads"
-                        onClick={() => openModal('scraper')}
-                        loading={loading === 'scraper'}
-                    />
-                    <CampaignButton
-                        icon={<Video className="w-4 h-4" />}
-                        label="Vídeo AI"
-                        desc="Sora / VEO3"
-                        onClick={() => openModal('social')}
-                        loading={loading === 'social'}
-                    />
-                    <CampaignButton
-                        icon={<BarChart className="w-4 h-4" />}
-                        label="Nano Ads"
-                        desc="Gestão Tráfego"
-                        onClick={() => openModal('ads')}
-                        loading={loading === 'ads'}
-                    />
-                </div>
-
-                {/* View Switcher & Toolbar */}
-                <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                    <div className="flex justify-between items-center mb-4">
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setViewMode('database')}
-                                className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 ${viewMode === 'database' ? 'bg-purple-100 text-purple-700' : 'text-gray-500 hover:bg-gray-50'}`}
-                            >
-                                <Users className="w-4 h-4" /> Base de Clientes ({dbClients.length})
-                            </button>
-                            <button
-                                onClick={() => setViewMode('import')}
-                                className={`px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 ${viewMode === 'import' ? 'bg-blue-100 text-blue-700' : 'text-gray-500 hover:bg-gray-50'}`}
-                            >
-                                <Upload className="w-4 h-4" /> Importação ({previewData.length})
+            {/* Modals */}
+            {activeModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900 capitalize flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-yellow-500" />
+                                {activeModal === 'social' ? 'Criar Comercial' : activeModal.toUpperCase()}
+                            </h2>
+                            <button onClick={() => setActiveModal(null)} className="text-gray-400 hover:text-gray-600">
+                                <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        {viewMode === 'database' && (
-                            <div className="flex gap-2">
-                                {selectedIds.length > 0 && (
-                                    <button
-                                        onClick={() => setShowTagModal(true)}
-                                        className="px-3 py-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg flex items-center gap-1 transition-colors"
-                                    >
-                                        <Tag className="w-3 h-3" />
-                                        Adicionar Tag ({selectedIds.length})
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
+                        {renderModalContent()}
 
-                    {/* List Content */}
-                    <div className="overflow-x-auto max-h-[500px]">
-                        {viewMode === 'import' && previewData.length === 0 && (
-                            <div className="text-center py-10 text-gray-400">
-                                <Upload className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                                <p>Nenhum arquivo CSV carregado para pré-visualização.</p>
-                            </div>
-                        )}
-
-                        {(viewMode === 'database' || (viewMode === 'import' && previewData.length > 0)) && (
-                            <table className="w-full text-left border-collapse text-sm">
-                                <thead className="sticky top-0 bg-white z-10 shadow-sm">
-                                    <tr className="border-b border-gray-100 text-gray-500 bg-gray-50/50">
-                                        {viewMode === 'database' && (
-                                            <th className="py-2 px-3 w-10">
-                                                <button onClick={toggleSelectAll}>
-                                                    {selectedIds.length === dbClients.length && dbClients.length > 0 ?
-                                                        <CheckSquare className="w-4 h-4 text-purple-600" /> :
-                                                        <Square className="w-4 h-4 text-gray-300" />
-                                                    }
-                                                </button>
-                                            </th>
-                                        )}
-                                        <th className="py-2 px-3">Nome</th>
-                                        <th className="py-2 px-3">Email/Contato</th>
-                                        {viewMode === 'database' && <th className="py-2 px-3">Tags</th>}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(viewMode === 'database' ? dbClients : previewData).map((row, idx) => {
-                                        // Handle potential missing IDs in preview by using index fallback
-                                        const rowId = (row as Customer).id || `preview-${idx}`;
-                                        const isSelected = selectedIds.includes(rowId);
-
-                                        return (
-                                            <tr key={rowId} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${isSelected ? 'bg-purple-50 hover:bg-purple-50' : ''}`}>
-                                                {viewMode === 'database' && (
-                                                    <td className="py-2 px-3">
-                                                        <button onClick={() => toggleSelectOne(rowId)}>
-                                                            {isSelected ?
-                                                                <CheckSquare className="w-4 h-4 text-purple-600" /> :
-                                                                <Square className="w-4 h-4 text-gray-300" />
-                                                            }
-                                                        </button>
-                                                    </td>
-                                                )}
-                                                <td className="py-2 px-3">
-                                                    <div className="font-medium text-gray-800">{row.name || 'Sem Nome'}</div>
-                                                </td>
-                                                <td className="py-2 px-3 text-xs font-mono text-gray-600">
-                                                    <div>{row.email}</div>
-                                                    <div>{row.phone}</div>
-                                                </td>
-                                                {viewMode === 'database' && (
-                                                    <td className="py-2 px-3">
-                                                        <div className="flex flex-wrap gap-1">
-                                                            {(row.tags || []).map((tag: string, tIdx: number) => (
-                                                                <span key={tIdx} className="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] border border-gray-200">
-                                                                    {tag}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    </td>
-                                                )}
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        )}
-                    </div>
-                </div>
-
-                {/* Tag Modal */}
-                {showTagModal && (
-                    <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-[60]">
-                        <div className="bg-white p-4 rounded-xl shadow-xl w-64 animate-fade-in">
-                            <h4 className="font-bold text-gray-800 mb-2">Nova Tag</h4>
-                            <input
-                                autoFocus
-                                className="w-full border p-2 rounded mb-2 text-sm"
-                                placeholder="Ex: VIP, Quente..."
-                                value={newTag}
-                                onChange={e => setNewTag(e.target.value)}
-                                onKeyDown={e => e.key === 'Enter' && handleAddTag()}
-                            />
-                            <div className="flex gap-2">
-                                <button onClick={() => setShowTagModal(false)} className="flex-1 py-1 text-xs text-gray-500 bg-gray-100 rounded">Cancelar</button>
-                                <button onClick={handleAddTag} className="flex-1 py-1 text-xs text-white bg-purple-600 rounded">Salvar</button>
-                            </div>
+                        <div className="mt-8 pt-4 border-t border-gray-100 flex gap-3">
+                            <button
+                                onClick={() => setActiveModal(null)}
+                                className="flex-1 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={submitAction}
+                                disabled={!!loading}
+                                className="flex-1 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-medium flex justify-center items-center gap-2"
+                            >
+                                {loading ? 'Enviando ao MCP...' : 'Executar'}
+                            </button>
                         </div>
                     </div>
-                )}
-
-            </div>
+                </div>
+            )}
         </div>
-
-        {/* Modals */}
-        {activeModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 animate-fade-in backdrop-blur-sm">
-                <div className="bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
-                    <div className="flex justify-between items-center mb-6">
-                        <h2 className="text-xl font-bold text-gray-900 capitalize flex items-center gap-2">
-                            <Zap className="w-5 h-5 text-yellow-500" />
-                            {activeModal === 'social' ? 'Criar Comercial' : activeModal.toUpperCase()}
-                        </h2>
-                        <button onClick={() => setActiveModal(null)} className="text-gray-400 hover:text-gray-600">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-
-                    {renderModalContent()}
-
-                    <div className="mt-8 pt-4 border-t border-gray-100 flex gap-3">
-                        <button
-                            onClick={() => setActiveModal(null)}
-                            className="flex-1 py-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            onClick={submitAction}
-                            disabled={!!loading}
-                            className="flex-1 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:shadow-lg transition-all font-medium flex justify-center items-center gap-2"
-                        >
-                            {loading ? 'Enviando ao MCP...' : 'Executar'}
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )}
-    </div>
-);
+    );
 };
 
 // Helper Component
